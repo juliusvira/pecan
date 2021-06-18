@@ -1,0 +1,168 @@
+ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,description
+1,LOG10CLVI,leaf_carbon_content,g C m-2,kg C m-2,1000,1.102,
+2,LOG10CRESI,reserve_carbon_content,g C m-2,kg C m-2,1000,0.3749,
+3,LOG10CRTI,root_carbon_content,g C m-2,kg C m-2,1000,0.2137,
+4,CSTI,,g C m-2,,,0,Initial stem C
+5,LOG10LAII,,,,,-0.46,
+6,PHENI,phenological_stage,,,,0.01,
+7,TILTOTI,,# m-2,,,2388,
+8,FRTILGI,,,,,0.3993,
+9,LT50I,,degrees C,,,-4.7894,Temperature that kills half the plants in a day
+10,CLAIV,,,,,0.5692,"Maximum LAI remaining after harvest, when no tillers elongate"
+11,COCRESMX,,,,,0.1451,Maximum concentration of reserves in aboveground biomass (not stubble)
+12,CSTAVM,,g C tiller-1,,,1.112,Maximum size of elongating tillers 
+13,DAYLB,min_daylength_reset,d d-1,d d-1,1,0.5329,Day length below which phenological stage is reset to zero
+14,DAYLP,min_daylength_slow,d d-1,d d-1,1,0.7104,Day length below which phenological stage slows down
+15,DLMXGE,daylength_effect,d d-1,d d-1,1,0.9849,Day length below which DAYLGE becomes less than 1
+16,FSLAMIN,,,,,0.8619,Minimum SLA of new leaves as a fraction of maximum possible SLA
+17,FSMAX,,,,,0.693,Maximum ratio of tiller and leaf appearance based on sward geometry
+18,HAGERE,etil_resv_harv,,,1,0.8342,Fraction of reserves in elongating tillers that is harvested 
+19,K,extinction_coefficient,m2 m-2,m2 m-2,1,0.4669,PAR extinction coefficient
+20,LAICR,lai_senescence,m2 m-2,m2 m-2,1,3.913,LAI above which shading induces leaf senescence
+21,LAIEFT,lai_til_decrease,m2 m-2,m2 m-2,1,0.1219,Decrease in tillering with leaf area index
+22,LAITIL,lai_til2leaf_max,m2 m-2,m2 m-2,1,0.9663,Maximum ratio of tiller and leaf apearance at low leaf area index
+23,LFWIDG,generative_leaf_width,m,mm,0.001,0.01042,Leaf width on elongating tillers (m)
+24,LFWIDV,leaf_width,m,mm,0.001,0.007001,Leaf width on non-elongating tillers
+25,NELLVM,n_el2nel,,,,2.172,Number of elongating leaves per non-elongating tiller
+26,PHENCR,phen_etil_decrease,,,,0.4989,Phenological stage above which elongation and appearance of leaves on elongating tillers decreases
+27,PHY,phyllochron,degree  C d,,1,45.09,
+28,RDRSCO,relative_shading_death,d-1,d-1,1,0.09563,Relative death rate of leaves and non-elongating tillers due to shading when LAI is twice the threshold (LAICR)
+29,RDRSMX,,d-1,d-1,1,0.06343,Maximum relative death rate of leaves and non-elongating tillers due to shading 
+30,RDRTEM,leaf_senescence_temp_rate,d-1 degC-1,d-1 degC-1,1,0.0009367,Proportionality of leaf senescence with temperature 
+31,RGENMX,til2etil_max_rate,d-1,d-1,1,0.01719,Maximum relative rate of tillers becoming elongating tillers
+32,ROOTDM,rooting_depth,m,m,1,1.182,Rooting depth
+33,RRDMAX,root_growth_rate,m d-1,m d-1,1,0.0155,Maximum root depth growth rate
+34,RUBISC,rubisco_content,g m-2,g m-2,1,4.553,Rubisco content of upper leaves 
+35,SHAPE,shape,,,,0.8442,Area of a leaf relative to a rectangle of same length and width
+36,SIMAX1T,elongating_tiller_sink_strength,g C tiller-1 d-1,g C tiller-1 d-1,1,0.005471,Sink strength of small elongating tillers
+37,SLAMAX,SLAMAX,m2 g C-1,m2 kg C-1,1,0.0781,Maximum SLA of new leaves
+38,TBASE,gdd_tbase,deg C,deg C,1,2.766,Minimum value of effective temperature for leaf elongation
+39,TCRES,tc_res,d,d,1,2.639,Time constant of mobilisation of reserves
+40,TOPTGE,TOpt_ge,deg C,deg C,1,21.37,Optimum temperature for vegetative tillers becoming generative
+41,TRANCO,transpiration_coefficient,mm d-1,mm d-1,1,6.435,Transpiration coefficient
+42,YG,growthYield,,,,0.8759,Growth yield per unit expended carbohydrate
+43,LAT,,,,,58.46,Site latitude
+44,WCI,,,,,0.3,Initial value of soil water concentration (volumetric)
+45,FWCAD,,,,,0.07,Water concentration at air dryness relative to saturation
+46,FWCWP,,,,,0.37,Water concentration at wilting point relative to saturation
+47,FWCFC,,,,,0.77,Water concentration at field capacity relative to saturation
+48,FWCWET,,,,,1,Water concentration above which transpiration is reduced relative to saturation
+49,WCST,,,,,0.43,Water concentration at full saturation
+50,WpoolMax,,mm,,,50,Maximum pool water (liquid plus ice)  
+51,Dparam,,deg C-1 d-1,,,0.001895,Constant in the calculation of dehardening rate 
+52,FGAS,,m3 m-3,,,0.4175,Soil pore space (potentially gaseous)
+53,FO2MX,,mol mol-1,,,0.2008,Maximum oxygen fraction of soil gas
+54,gamma,,m-1,,,68.86,Temperature extinction coefficient of snow
+55,Hparam,,deg C-1 d-1,,,0.008262,Hardening parameter  
+56,KRDRANAER,,d-1,,,0.6396,Maximum relative death rate due anaerobic conditions
+57,KRESPHARD,,g C g-1 C deg C -1,,,0.02244,Carbohydrate requirement of hardening
+58,KRSR3H,,deg C -1,,,0.9618,Constant in the logistic curve for frost survival
+59,KRTOTAER,total2RA,,,,1.775,Ratio of total to aerobic respiration  
+60,KSNOW,,mm-1,,,0.03871,Light extinction coefficient of snow  
+61,LAMBDAsoil,,J m-1 deg C-1 d-1,,,199000,
+62,LDT50A,,d,,,1.555,Intercept of linear dependence of LD50 on lT50 
+63,LDT50B,,d deg C -1,,,-2.172,Slope of linear dependence of LD50 on lT50 
+64,LT50MN,,deg C,,,-25.47, Minimum LT50  
+65,LT50MX,,deg C,,,-4.544,Maximum LT50
+66,RATEDMX,,deg C d-1,,,1.81,Maximum dehardening rate  
+67,reHardRedDay,,d,,,133.7,Duration of period over which rehardening capability disappears 
+68,RHOnewSnow,,kg m-3,,,85.86,Density of newly fallen snow  
+69,RHOpack,,d-1,,,0.02187, Relative packing rate of snow  
+70,SWret,,mm mm-1 d-1,,,0.08415, Liquid water storage capacity of snow  
+71,SWrf,,mm d-1 deg C -1,,,0.0104,Maximum refreezing rate per degree below TmeltFreeze
+72,THARDMX,THard_max,deg C,deg C,1,14.82,Maximum surface temperature at which hardening is possible
+73,TmeltFreeze,,deg C,,,0,Temperature above which snow melts  
+74,TrainSnow,,deg C,,,0.01062,Temperature below which precipitation is snow
+75,TsurfDiff,,deg C,,,3.353,Constant in the calculation of dehardening rate 
+76,KLUETILG,,,,,0.5787,LUE-increase with increasing fraction elongating tillers
+77,FRTILGG1I,,,,,0.5648,Initial fraction of generative tillers that is still in stage 1 (TILG1) 
+78,DAYLG1G2,,d d-1,,,0.6302,Minimum day length above which generative  tillers  can start elongating (by moving from elongating (by TILG1 to TILG2). 
+79,RGRTG1G2,,tiller tiller-1 d-1,,,0.8237,Relative rate of TILG1 becoming  TILG2 
+80,RDRTMIN,min_foliage_mort_rate,d-1,d-1,1,0.01209,Minimum relative death rate of foliage
+81,TVERN,vernalization_threshold,deg C,deg C,1,20,Vernalisation threshold
+82,CLITT0,,,,,300,Initial value of litter C
+83,CSOM0,,,,,10000,SOM C pool
+84,CNLITT0,,,,,50,C:N ratio of litter
+85,CNSOMF0,,,,,25,C:N ratio of fast SOM
+86,CNSOMS0,,,,,10,C:N ratio of slow SOM
+87,FCSOMF0,,,,,0.2,Fraction of soil SOC that is fast
+88,FLITTSOMF,f_litter_SOM_fast,,,,0.6,Fraction of decomposed litter becoming fast SOM
+89,FSOMFSOMS,fastOM2slowOM,,,,0.03,Fraction of decomposed fast SOM
+90,RNLEACH,,,,,0.5,Relative concentration of mineral N in leaching water
+91,KNEMIT,,d-1,,,0.0005,Fraction of mineral N emitted in wet soil
+92,NMIN0,,,,,1,Initial mineral N
+93,TCLITT,litter_residence_time,d,d,1,365,Residence time of litter
+94,TCSOMF,fOM_residence_time,d,d,1,1460,Residence time of fast decomposing OM
+95,TCSOMS,sOM_residence_time,d,d,1,73000,Residence time of slowly decomposing OM
+96,TMAXF,Tdecomp_max,deg C,deg C,1,50,Temperature at which decomposition is maximal
+97,TSIGMAF,decomp_res2Tdelta,deg C,deg C,1,20,Resilience of decomposition to temperature change
+98,RFN2O,,,,,8.5,Sensitivity of N-emission partitioning to soil wetness
+99,WFPS50N2O,,,,,0.7,Water filled pore space at which N-emission is half N2O
+100,NCSHMAX,n2c_shoot_max,,,,0.06934,Maximum N-C ratio of shoot
+101,NCR,,,,,0.02195,N-C ratio of roots
+102,RDRROOT,,d-1,d-1,1,0.02,Relative death rate of roots  
+103,RDRSTUB,,,,,0.2086,Relative death rate of stubble  
+104,NFERTMULT,,,,,1,Multiplication factor for changing fertlisation (default = 1)
+105,FNCGSHMIN,,,,,0.327,Relative minimum N-C ratio of growing tissue 
+106,TCNSHMOB,,d,d,1,7.643,Time constant  of  shoot  N remobilization
+107,TCNUPT,,d,d,1,27.6,Time constant of soil mineral N uptake 
+108,F_DIGEST_WALL_FMIN,,,,,0.7,
+109,F_DIGEST_WALL_MAX,,,,,0.9,
+110,F_WALL_LV_FMIN,,,,,0.7,
+111,F_WALL_LV_MAX,,,,,0.6,
+112,F_WALL_ST_FMIN,,,,,0.8,
+113,F_WALL_ST_MAX,,,,,0.75,
+114,lag_coef1,,,,,0.4259767878,lag coefficient for soil temperature
+115,lag_coef2,,,,,0.7330371577,lag coefficient for soil temperature
+116,SdepthMax,,m,,,0.2208209643,maximum snow depeth to prevent heat convection
+117,th_lower,,,,,0.145443199,the lower threshold for baseflow
+118,th_upper,,,,,0.344098589,the phase point for drainage curve
+119,Bmax,,mm d-1,,,0.1166755161,maximum baseflow rate
+120,Bfra,,,,,0.3803666,fraction of maximum baseflow rate in linear drainage
+121,B_trans,,,,,0.5271620885,the distribution parameter for crop water uptake
+122,f_aer,,,,,0.72,the threshold of water content for oxygen deficiency
+123,drain_max,,mm,,,7.8926040697,the maximum drainage amount in one day
+124,CN_lit1_0,,,,,15,C/N ration for fast litter pool (initial)
+125,CN_lit2_0,,,,,80,C/N ration for slow litter pool (initial)
+126,CN_som1,,,,,10,C/N ration for active som pool
+127,CN_som2,,,,,50,C/N ration for slow som pool
+128,CN_som3,,,,,100,C/N ration for passive som pool
+129,k0_lit1,,a-1,,,4.5914806923,the potential decompostion rate for fast pool
+130,k0_lit2,,a-1,,,1.3723666365,the potential decompostion rate for slow pool
+131,k0_som1,,a-1,,,0.6019528473,the potential decompostion rate for active som pool
+132,k0_som2,,a-1,,,0.0406847942,the potential decompostion rate for slow som pool
+133,k0_som3,,a-1,,,0.0004286123,the potential decompostion rate for passive som pool
+134,rlit1,,,,,0.5600935723,respiration fraction of fast litter pool
+135,rlit2,,,,,0.4466034606,respiration fraction of slow litter pool
+136,rsom1,,,,,0.261270146,respiration fraction of active som pool
+137,rsom2,,,,,0.5404747313,respiration fraction of slow som pool
+138,rsom3,,,,,0.8794325153,respiration fraction of passive som pool
+139,rdoc,,,,,0.05,fraction of doc
+140,Q10,,,,,2.0706004162,the proportional decrease in decomposition rate for a 10 degree decrease in temperature
+141,Tref,,deg C,,,20,reference temperature
+142,De,,m,,,1.4684476833,e-folding depth
+143,kroot,,,,,0.1,acid decompostion rate of root
+144,ksom,,,,,0.0007,decomposition rate of som (aerobic)
+145,rsom,,,,,0.2,respiration fraction of som (aerobic)
+146,Pmax,,,,,0.8,maximum ratio of total CH4 pool for plant transportation
+147,Emax,,,,,0.4,maximum ratio of total CH4 pool for ebullition
+148,Dmax,,,,,0.1,maximum ratio of total CH4 pool for diffusion
+149,Omax,,kgC m-3 d-1,,,2.00E-06,maximum ratio of total CH4 for oxidation
+150,kdenit1,,,,,0.06,denitrification coefficient for NO3
+151,kdenit2,,,,,0.04,denitrification coefficient for DOC
+152,k1,,,,,25,diffusion factor
+153,knit,,,,,0.0004,nitrification coefficient for NH4
+154,RateL,,,,,0.5,leaching rate
+155,T_coef,,,,,1.2742005722,"correcting coefficient for variable ""df"""
+156,pm,,,,,0.5569545453,the fraction of mobile porosity in the total 
+157,cim,,,,,0.4520937269,the water capacity fraction for immobile pore
+158,fadv,,,,,0.1197571771,the coeffient for the advection of water between mobile and immobile pores  
+159,Kc,,,,,0.8176249814,coefficient for ET0
+160,lag_coef0,,,,,0.5743450558,lag coefficient for soil temperature
+161,th_a,,,,,0.0413971834,water effect - lower
+162,th_b,,,,,0.224458876,water effect - upper
+163,MR_sh,,gC gN-1 d-1,,,0.2382292495,MR coefficient for shoot N content
+164,MR_rt,,gC gN-1 d-1,,,0.2359218298,MR coefficient for root  N content
+165,MR_Q10,,,,,2,Q10 value for MR (temperature effect)
+166,DTrans,,m,,,0.1380514934,coefficient for transpiration allocation
+167,Omax1,,,,,0.008,maximum ratio of total CH4 for oxidation

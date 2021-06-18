@@ -1,0 +1,4 @@
+ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,description
+1,FIRST,first,g,g,1.0,1.0,first parameter
+2,SECOND,second,g,g,1.5,2.0,second parameter
+3,THIRD,,g,,,3.0,third parameter

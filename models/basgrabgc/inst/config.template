@@ -1,0 +1,30 @@
+#### running mode ####
+#### 1: a "new" running with initial values for state variables ####
+#### 2: a "restart" running with state variable values from previous simulation ####
+1
+#### if 2, list the path of restart file (state variable) ####
+Na
+#### mode for state variables ####
+#### 1: write out ####
+#### 0: no ####
+0
+#### if 1, list the path of file ####
+Na
+#### the time scale for modelling (start year, start day, simulating period: 2003.01.01-2004.11.30) ####
+@START_YEAR@
+@START_DOY@
+@NUM_DAYS@
+#### Type of weather data (1: original type; 2: min/max temperature & precipitation) ####
+1
+#### path of weather data ####
+@SITE_MET@
+#### path of parameter value ####
+@PATH_PARAM@
+#### path of management setting ####
+@PATH_MANAGEMENT@
+#### path of output file ####
+@OUT_PATH@
+#### path of soil setting ####
+@PATH_SOIL@
+#### path of location ####
+NOT_USED_WITH_TYPE_1
