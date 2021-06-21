@@ -64,7 +64,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
     }
     value
   }
-  #browser()
+
   params <- vapply(seq_len(nrow(param.map)), map.row, 1.0)
   # write params into a file
   param.file <- file.path(settings$rundir, run.id, "basgrabgc.param")
@@ -114,6 +114,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   PEcAn.logger::logger.info(sprintf('job script written to %s', file.path(settings$rundir, run.id, "job.sh")))
+  
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
   if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
@@ -125,7 +126,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
     PEcAn.logger::logger.info("Using", filename, "as config template")
     config.text <- readLines(con = filename, n = -1)
   }
-  #browser()
+
   config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
   start.date <- lubridate::parse_date_time(settings$run$start.date, c('%Y-%m-%d %H:%M:%s', '%Y-%m-%d %H:%M', '%Y-%m-%d'))
   config.text <- gsub("@START_DOY@", format(start.date, "%d"), config.text)
