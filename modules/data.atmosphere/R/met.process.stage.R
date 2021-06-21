@@ -18,7 +18,7 @@ met.process.stage <- function(input.id, raw.id, con) {
   } else if (format.id == cf.id) {
     # we will still do the standardization since extracting/gapfilling etc 
     # more than once makes no difference
-    stage <- list(download.raw = FALSE, met2cf = FALSE, standardize = TRUE, 
+    stage <- list(download.raw = FALSE, met2cf = FALSE, standardize = FALSE, 
                   met2model = TRUE, id.name = "cf.id")
   } else {
     # assume the only other option is a model format so nothing needs to be done

@@ -236,25 +236,32 @@ met.process <- function(site, input_met, start_date, end_date, model,
       
       machine.id <- get.id(table = "machines", "hostname", PEcAn.remote::fqdn(), con)
       # Fidning the tiles.
+      if (!is.null(register$ParentSite)) {
+        site_id <- register$ParentSite
+      } else {
+        site_id <- new.site$id
+      }
       raw.tiles <- tbl(con, "inputs") %>%
         filter(
-          site_id == register$ParentSite,
-          start_date >= start_date,
-          end_date <= end_date,
+          site_id == !!site_id,
+          start_date <= !!start_date,
+          end_date >= !!end_date,
           format_id == formatid
         ) %>%
         filter(grepl(met, name)) %>%
         inner_join(tbl(con, "dbfiles"), by = c('id' = 'container_id')) %>%
-        filter(machine_id == machine.id) %>%
+        filter(machine_id == machine.id, container_type == 'Input') %>%
         collect()
       
       cf.id <- raw.id <- list(input.id = raw.tiles$id.x, dbfile.id = raw.tiles$id.y)
+      # input_met$id overwrites ready.id below, needs to be populated here
+      input_met$id <- raw.id
     }
     
     stage$met2cf <- FALSE 
-    stage$standardize <- TRUE
+    #stage$standardize <- TRUE
   }
-
+  
   #--------------------------------------------------------------------------------------------------#
   # Change to CF Standards
   if (stage$met2cf) {
@@ -281,7 +288,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if (stage$standardize) {
     standardize_result <- list()
-    
     for (i in seq_along(cf.id[[1]])) {
 
       if (register$scale == "regional") {
@@ -330,12 +336,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
-    
     ## Get Model Registration
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
     reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
-      met2model.result = list()
+    met2model.result = list()
     for (i in seq_along(ready.id[[1]])) {
       met2model.result[[i]] <- .met2model.module(ready.id = list(input.id = ready.id$input.id[i], dbfile.id = ready.id$dbfile.id[i]), 
                                     model = model, 
