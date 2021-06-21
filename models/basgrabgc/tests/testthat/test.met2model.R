@@ -46,7 +46,7 @@ test_that('make.times fails with bad inputs', {
 })
 
 test_that('read.met reads some data and units', {
-  file.path <- system.file('test.met.1d.nc', package='PEcAn.BASGRABGC')
+  file.path <- 'test.met.1d.nc'
   result <- read.met(file.path)
   val <- result$values
   # ncdump -p 9 test.met.1d.nc
