@@ -11,10 +11,11 @@
 make.times <- function(times.numeric, units) {
   timespec <- strsplit(units, ' ')[[1]]
   if (length(timespec) < 3) {
-    logger.severe('Something wrong with time:units')
+    PEcAn.logger::logger.severe('Something wrong with time:units')
   }
   timeunit <- timespec[1]
-  basetime <- lubridate::ymd_hms(timespec[3])
+  formats <- c('%Y-%m-%d %H:%M:%s','%Y-%m-%d %H:%M', '%Y-%m-%d')
+  basetime <- lubridate::parse_date_time(timespec[3], formats)
   lapply(times.numeric, function(x) basetime + lubridate::duration(x, units=timeunit))
 }
 
@@ -22,9 +23,9 @@ make.times <- function(times.numeric, units) {
 read.met <- function(file.path) {
   nc <- ncdf4::nc_open(file.path)
   times.numeric <- c(ncdf4::ncvar_get(nc, 'time'))
-  times <- make.times(times.numeric, ncatt_get(nc, 'time', 'units')$value)
+  times <- make.times(times.numeric, ncdf4::ncatt_get(nc, 'time', 'units')$value)
 
-  variables <- c('air_temperature', 'relative_humidity', 'eastward_wind', 'windspeed', 'precipitation_flux',
+  variables <- c('air_temperature', 'relative_humidity', 'eastward_wind', 'wind_speed', 'precipitation_flux',
                  'northward_wind', 'northward_wind', 'surface_downwelling_shortwave_flux_in_air')
 
   values <- list()
@@ -41,25 +42,26 @@ read.met <- function(file.path) {
 }
 
 process.met <- function(values, units, times) {
-  if (!('windspeed' %in% names(values))) {
+  #browser()
+  if (!('wind_speed' %in% names(values))) {
     # evaluate wind speed before averaging
-    values[['windspeed']] <- sqrt(values$northward_wind^2 + values$eastward_wind^2)
-    units[['windspeed']] <- units[['northward_wind']]
+    values[['wind_speed']] <- sqrt(values$northward_wind^2 + values$eastward_wind^2)
+    units[['wind_speed']] <- units[['northward_wind']]
   }
 
   # Check that all required variables are present
   num_times <- length(times)
-  variables.req <- c('air_temperature', 'relative_humidity', 'windspeed', 'precipitation_flux',
+  variables.req <- c('air_temperature', 'relative_humidity', 'wind_speed', 'precipitation_flux',
                      'surface_downwelling_shortwave_flux_in_air')
   for (var in variables.req) {
     if (!(var %in% names(values))) {
-      logger.severe(sprintf('%s not in names(values)', var))
+      PEcAn.logger::logger.severe(sprintf('%s not in names(values)', var))
     }
     if (!(var %in% names(units))) {
-      logger.severe(sprintf('%s not in names(units)', var))
+      PEcAn.logger::logger.severe(sprintf('%s not in names(units)', var))
     }
     if (length(values[[var]]) != num_times) {
-      logger.severe(sprintf('length(times) != length(values[[%s]])', var))
+      PEcAn.logger::logger.severe(sprintf('length(times) != length(values[[%s]])', var))
     }
   }
 
@@ -78,6 +80,7 @@ process.met <- function(values, units, times) {
     udunits2::ud.convert(values.daily[[var]], units[[var]], unit)
   }
   num.days <- nrow(values.daily)
+
   weather <- data.frame(ST = rep(-99, num.days),
                         YR = values.daily$year,
                         DOY = values.daily$doy,
@@ -86,13 +89,55 @@ process.met <- function(values, units, times) {
                         TMMNI = uc('tdmin', 'degC'),
                         RH = values.daily$relative_humidity,
                         RAINI = uc('precipitation_flux', 'kg/m2/day'),
-                        WNI = uc('windspeed', 'm/s'),
+                        WNI = uc('wind_speed', 'm/s'),
                         GR = uc('surface_downwelling_shortwave_flux_in_air', 'MJ/m2/day'))
                         
   
   
 }
                      
+
+compose.met2model <- function(read.met.fcn, process.met.fcn) {
+  # we parametrize the sub-functions to make testing easier
+  met2model.fcn <- function(in.path, in.prefix, outfolder, start_date, end_date,  overwrite = FALSE, full.path = FALSE, ...) {
+    # full.path => just read that file
+    if (full.path) {
+      files.in <- file.path(in.path, in.prefix)
+    } else {
+      # yearly files
+      files.in <- vapply(seq(lubridate::year(start_date), lubridate::year(end_date)),
+                         function(y) file.path(in.path, sprintf('%s.%i.nc', in.prefix, y)),
+                         character(1))
+    }
+    processed.lst <- lapply(files.in,
+                            function(name) {
+                              PEcAn.logger::logger.info(sprintf('processing met file: %s', name))
+                              from.file <- read.met.fcn(name)
+                              process.met.fcn(as.data.frame(from.file$values), from.file$units, from.file$times)})
+    processed <- do.call(rbind, processed.lst)
+    # follow SIPNET
+    out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
+                      strptime(end_date, "%Y-%m-%d"),
+                      "clim",
+                      sep = ".")
+    out.file.full <- file.path(outfolder, out.file)
+    results <- data.frame(file = out.file.full,
+                          host = PEcAn.remote::fqdn(),
+                          mimetype = "text/plain",
+                          formatname = "basgrabgc.clim",
+                          startdate = start_date,
+                          enddate = end_date,
+                          dbfile.name = out.file,
+                          stringsAsFactors = FALSE)
+    if (!file.exists(outfolder)) {
+      dir.create(outfolder)
+    }
+    write.table(processed, out.file.full, quote = FALSE, sep = '\t', row.names = FALSE)
+    return(results)
+    
+  } 
+  return(met2model.fcn)
+}
 
 
 ##-------------------------------------------------------------------------------------------------#
@@ -109,39 +154,4 @@ process.met <- function(values, units, times) {
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-met2model.BASGRABGC <- function(in.path, in.prefix, outfolder, start_date, end_date,  overwrite = FALSE) {
-  file.in <- file.path(in.path, in.prefix)
-  PEcAn.logger::info(sprintf('processing met file: %s', file.in))
-  from.file <- read.met(file.in)
-  processed <- process.met(as.data.frame(from.file$values), from.file$units, from.file$times)
-  # follow SIPNET
-  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
-                    strptime(end_date, "%Y-%m-%d"),
-                    "clim",
-                    sep = ".")
-  out.file.full <- file.path(outfolder, out.file)
-  results <- data.frame(file = out.file.full,
-                        host = PEcAn.remote::fqdn(),
-                        mimetype = "text/plain",
-                        formatname = "basgrabgc.clim",
-                        startdate = start_date,
-                        enddate = end_date,
-                        dbfile.name = out.file,
-                        stringsAsFactors = FALSE)
-  if (!file.exists(outfolder)) {
-    dir.create(outfolder)
-  }
-  write.table(processed, out.file.full, quote = FALSE, sep = '\t', row.names = FALSE)
-  return(results)
-  
-  # Please follow the PEcAn style guide:
-  # https://pecanproject.github.io/pecan-documentation/master/coding-style.html
-  
-  # Note that `library()` calls should _never_ appear here; instead, put
-  # packages dependencies in the DESCRIPTION file, under "Imports:".
-  # Calls to dependent packages should use a double colon, e.g.
-  #    `packageName::functionName()`.
-  # Also, `require()` should be used only when a package dependency is truly
-  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
-  
-} # met2model.MODEL
+met2model.BASGRABGC <- compose.met2model(read.met, process.met)

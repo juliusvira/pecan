@@ -30,6 +30,14 @@ test_that('make.times works with days', {
   expect_equal(datetimes[[3]], ymdf('2001-02-01T00:00'))
 })
 
+test_that('make.times works with date-only reftime', {
+  days = c(10, 366, 0)
+  datetimes <- make.times(days, 'days since 2001-02-01')
+  expect_equal(datetimes[[1]], ymdf('2001-02-11T00:00'))
+  expect_equal(datetimes[[2]], ymdf('2002-02-02T00:00'))
+  expect_equal(datetimes[[3]], ymdf('2001-02-01T00:00'))
+})
+
 test_that('make.times fails with bad inputs', {
   values <- c(1,2,3)
   expect_error(make.times(values, 'nonsense since 2001-02-01T00:00:00'))
@@ -56,12 +64,12 @@ test_that('read.met reads some data and units', {
 test_that('process.met works', {
   values <- list('air_temperature' = c(300, 301, 302, 303),
                  'relative_humidity' = c(0.4, 0.5, 0.6, 0.7),
-                 'windspeed' = c(10, 15, 20, 25),
+                 'wind_speed' = c(10, 15, 20, 25),
                  'precipitation_flux' = c(0.1, 0.2, 0.3, 0.4),
                  'surface_downwelling_shortwave_flux_in_air' = c(100, 50, 20, 10))
   units <- list('air_temperature' = 'Kelvin',
                 'relative_humidity' = '',
-                'windspeed' = 'm/s',
+                'wind_speed' = 'm/s',
                 'precipitation_flux' = 'kg/m2/s',
                 'surface_downwelling_shortwave_flux_in_air' = 'W/m2')
   times <- list(ymdf('2000-01-01 06:00'), ymdf('2000-01-01 18:00'),
@@ -82,9 +90,9 @@ test_that('process.met works', {
   expect_equal(processed$YR, rep(2000, 2))
   expect_equal(processed$DOY, c(1,2))
   
-  # check computation of windspeed
+  # check computation of wind_speed
   values.nows <- values
-  values.nows[['windspeed']] <- NULL
+  values.nows[['wind_speed']] <- NULL
   values.nows[['eastward_wind']] <- c(1,1, 2,2)
   values.nows[['northward_wind']] <- c(3,3, 4,4)
   units.nows <- units
@@ -113,9 +121,9 @@ test_that('met2model.BASGRABGC succeeds with a test dataset', {
   filename.1d <- 'fakemet.1d.nc'
   start_date <- ymdf('2000-01-01 00:00')
   end_date <-  ymdf('2001-01-01 00:00')
-  result.6h <- met2model.BASGRABGC(dirpath, filename.6h, outfolder, start_date, end_date)
+  result.6h <- met2model.BASGRABGC(dirpath, filename.6h, outfolder, start_date, end_date, full.path = TRUE)
   table.6h <- read.table(result.6h[['file']], sep='\t', header = TRUE)
-  result.1d <- met2model.BASGRABGC(dirpath, filename.1d, outfolder, start_date, end_date)
+  result.1d <- met2model.BASGRABGC(dirpath, filename.1d, outfolder, start_date, end_date, full.path = TRUE)
   table.1d <- read.table(result.1d[['file']], sep='\t', header = TRUE)
 
   expect_equal(table.6h$T, table.1d$T, tolerance=1e-3)
@@ -128,6 +136,23 @@ test_that('met2model.BASGRABGC succeeds with a test dataset', {
   
 })
 
+test_that('multi-year processing selects the right files',{
+  # use stub functions for read.met and process.met to just check that the expected files
+  # functions are called on the expected files.
+  read.met.stub <- function(file.path) {
+    list(values=list(path=file.path), units='', times=file.path)
+  }
+  process.met.stub <- function(values, units, times) {
+    data.frame(name=values[1])
+  }
+  fcn <- compose.met2model(read.met.stub, process.met.stub)
+  start_date <- ymdf('2000-01-01 00:00')
+  end_date <-  ymdf('2001-12-31 23:00')
+  result <- fcn('dirname', 'filename', outfolder, start_date, end_date)
+  table <- read.table(result[['file']], sep='\t', header = TRUE)
+  expected <- c('dirname/filename.2000.nc', 'dirname/filename.2001.nc')
+  expect_equal(table$path, expected)
+})
 
 ## test_that("Met conversion runs without error", {
 ##   skip("This is a template test that will not run. To run it, remove this `skip` call.")
