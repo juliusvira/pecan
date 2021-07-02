@@ -13,15 +13,15 @@
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
-##' @name write.config.MODEL
-##' @title Write MODEL configuration files
+##' @name write.config.BASGRABGC
+##' @title Write configuration files
 ##' @param defaults list of defaults to process
 ##' @param trait.values vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
-##' @return configuration file for MODEL for given run
+##' @return configuration file for basgra-bgc for given run
 ##' @export
-##' @author Rob Kooper
+##' @author Julius Vira
 ##-------------------------------------------------------------------------------------------------#
 write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   # Please follow the PEcAn style guide:
@@ -113,6 +113,11 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
   config.file.path <- file.path(outdir, paste0("CONFIG.", run.id, ".txt"))
   jobsh <- gsub("@CONFIG@", config.file.path, jobsh)
+
+  jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
+  jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
+  jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
+  jobsh <- gsub("@END_DATE@",settings$run$end.date , jobsh)
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
@@ -132,7 +137,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
 
   config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
   start.date <- lubridate::parse_date_time(settings$run$start.date, c('%Y-%m-%d %H:%M:%s', '%Y-%m-%d %H:%M', '%Y-%m-%d'))
-  config.text <- gsub("@START_DOY@", format(start.date, "%d"), config.text)
+  config.text <- gsub("@START_DOY@", format(start.date, "%j"), config.text)
   config.text <- gsub("@START_YEAR@", format(start.date, "%Y"), config.text)
   end.date <-  lubridate::parse_date_time(settings$run$end.date, c('%Y-%m-%d %H:%M:%s', '%Y-%m-%d %H:%M', '%Y-%m-%d'))
   num_days <- as.integer(difftime(end.date, start.date), units='days')

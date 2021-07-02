@@ -152,6 +152,6 @@ compose.met2model <- function(read.met.fcn, process.met.fcn) {
 ##' @param overwrite logical: replace output files if they already exist?
 ##' @return OK if everything was succesful.
 ##' @export
-##' @author Rob Kooper
+##' @author Julius Vira
 ##-------------------------------------------------------------------------------------------------#
 met2model.BASGRABGC <- compose.met2model(read.met, process.met)
