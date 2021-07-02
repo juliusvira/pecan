@@ -7,20 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##-------------------------------------------------------------------------------------------------#
-##' Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
-##' 
-##' @name model2netcdf.MODEL
-##' @title Code to convert MODELS's output into netCDF format
-##'
-##' @param outdir Location of model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
-##' @export
-##'
-##' @author Rob Kooper
 
 die <- PEcAn.logger::logger.severe
 
@@ -130,9 +116,24 @@ get_model2netcdf <- function(make_netcdf_func, get_output_func, get_out_info_fun
   }
 }
 
+
+##-------------------------------------------------------------------------------------------------#
+##' Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
+##' 
+##' @name model2netcdf.BASGRABGC
+##' @title Code to convert MODELS's output into netCDF format
+##'
+##' @param outdir Location of model output
+##' @param sitelat Latitude of the site
+##' @param sitelon Longitude of the site
+##' @param start_date Start time of the simulation
+##' @param end_date End time of the simulation
+##' @export
+##'
+##' @author Julius Vira
 model2netcdf.BASGRABGC <- get_model2netcdf(make_netcdf,
                                            get_output_func = function(filepath) {
-                                             read.table(file_path)},
+                                             read.table(filepath)},
                                            get_out_info_func = function() {
                                              read.csv(system.file('basgra-bgc.output.map.csv', package='PEcAn.BASGRABGC'))}
                                            )
