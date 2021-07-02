@@ -15,7 +15,7 @@ settings = list(host = list(rundir = outfolder, outdir = outfolder),
                                          soil = list(path = '__soil__'))),
                 rundir = outfolder)
 
-param.map.file.test <- system.file('test.param.map.csv', package = 'PEcAn.BASGRABGC')
+param.map.file.test <- 'test.param.map.csv'
 param.map <- read.csv(file = param.map.file.test)
 trait.values.test <- list(list(second = 1, first = 2, unused = -99)) # change the order
 defaults <- NULL
@@ -26,13 +26,21 @@ test_that('Parameters are mapped and converted according to the table', {
   result <- write.config.BASGRABGC(defaults, trait.values.test, my.settings, run.id)
   # read back the params and check
   param.file <- file.path(settings$rundir, run.id, "basgrabgc.param")
-  params <- read.table(file = param.file)[,1]
+  conn <- file(param.file, 'r')
+  num.params <- as.integer(readLines(conn, 1))
+  table <- read.table(file = conn)
+  close(conn)
+  param.names <- table[,1]
+  params <- table[, 2]
+
+  expect_equal(num.params, length(params))
   expect_equal(length(params), nrow(param.map))
   # first two converted from trait.values
   expect_equal(params[1], trait.values.test[[1]][['first']] * param.map$conv2basgra[1])
   expect_equal(params[2], trait.values.test[[1]][['second']] * param.map$conv2basgra[2])
   # third not in trait.values
   expect_equal(params[3], param.map$default[3])
+  expect_equal(param.names, param.map$name.basgra)
 })
 
 test_that('Mapping the parameters with the full table passes without errors', {

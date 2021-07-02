@@ -68,9 +68,12 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   params <- vapply(seq_len(nrow(param.map)), map.row, 1.0)
   # write params into a file
   param.file <- file.path(settings$rundir, run.id, "basgrabgc.param")
-  cat(params, file = param.file, sep = '\n')
-  #browser()
-  
+  df.params <- data.frame(name=param.map$name.basgra, value=params)
+  conn <- file(param.file, 'w')
+  cat(nrow(df.params), file = conn, sep = '\n') # first line in the number of params
+  write.table(df.params, file = conn, col.names = FALSE, row.names = FALSE, quote = FALSE)
+  close(conn)
+
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
