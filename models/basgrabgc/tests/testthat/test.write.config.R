@@ -1,3 +1,5 @@
+context("write.config")
+
 run.id <- 0
 
 outfolder <- tempfile()
@@ -8,7 +10,9 @@ settings = list(host = list(rundir = outfolder, outdir = outfolder),
                 model = list(binary = '__binary__'),
                 run = list(start.date = '2001-01-02',
                            end.date = '2002-01-01 01:00',
-                           inputs = list(met = list(path = '__met__'))),
+                           inputs = list(met = list(path = '__met__'),
+                                         management = list(path = '__management__'),
+                                         soil = list(path = '__soil__'))),
                 rundir = outfolder)
 
 param.map.file.test <- system.file('test.param.map.csv', package = 'PEcAn.BASGRABGC')
@@ -62,23 +66,8 @@ test_that('The config file has the correct content', {
   expect_equal(as.integer(lines[[16]]), 365-1)
   expect_equal(lines[[20]], settings$run$inputs$met$path)
   expect_equal(lines[[22]], file.path(settings$rundir, run.id, "basgrabgc.param"))
-  # [[24]] management: not implemented
-  path.out <- file.path(settings$host$outdir, paste0("out", run.id))
+  expect_equal(lines[[24]], settings$run$inputs$management$path)
+  path.out <- file.path(settings$host$outdir, run.id, 'basgrabgc.out')
   expect_equal(lines[[26]], path.out)
-  # [[28]] soil: not implemented
+  expect_equal(lines[[28]], settings$run$inputs$soil$path)
 })
-
-
-
-## test_that("Met conversion runs without error", {
-##   skip("This is a template test that will not run. To run it, remove this `skip` call.")
-##   nc_path <- system.file("test-data", "CRUNCEP.2000.nc",
-##                          package = "PEcAn.utils")
-##   in.path <- dirname(nc_path)
-##   in.prefix <- "CRUNCEP"
-##   start_date <- "2000-01-01"
-##   end_date <- "2000-12-31"
-##   result <- met2model.MODEL(in.path, in.prefix, outfolder, start_date, end_date)
-##   expect_s3_class(result, "data.frame")
-##   expect_true(file.exists(result[["file"]][[1]]))
-## })
