@@ -14,7 +14,7 @@ mkdir -p "@OUTDIR@"
 if [ ! -e "@OUTDIR@/results.csv" ]; then
   cd "@RUNDIR@"
   
-  "@BINARY@ -file @CONFIG@"
+  @BINARY@ -file @CONFIG@
   STATUS=$?
   
   # check the status
