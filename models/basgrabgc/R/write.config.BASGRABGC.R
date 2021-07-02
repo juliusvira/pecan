@@ -138,9 +138,9 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   #config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)
   #config.text <- gsub("@ENSNAME@", run.id, config.text)
   
-  filename <- paste0("out", run.id)
+  filename <- 'basgrabgc.out'
   config.text <- gsub("@PATH_PARAM@", param.file, config.text)
-  config.text <- gsub("@OUT_PATH@", file.path(settings$host$outdir, filename), config.text)
+  config.text <- gsub("@OUT_PATH@", file.path(settings$host$outdir, run.id, filename), config.text)
   
   #-----------------------------------------------------------------------
   
