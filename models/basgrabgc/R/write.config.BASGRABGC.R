@@ -137,10 +137,12 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
 
   config.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, config.text)
   start.date <- lubridate::parse_date_time(settings$run$start.date, c('%Y-%m-%d %H:%M:%s', '%Y-%m-%d %H:%M', '%Y-%m-%d'))
+  
   config.text <- gsub("@START_DOY@", format(start.date, "%j"), config.text)
   config.text <- gsub("@START_YEAR@", format(start.date, "%Y"), config.text)
   end.date <-  lubridate::parse_date_time(settings$run$end.date, c('%Y-%m-%d %H:%M:%s', '%Y-%m-%d %H:%M', '%Y-%m-%d'))
-  num_days <- as.integer(difftime(end.date, start.date), units='days')
+  # basgra-bgc outputs at the start of time step, the last time step does not go to output.
+  num_days <- as.integer(difftime(end.date, start.date), units='days') + 1 
   config.text <- gsub("@NUM_DAYS@", num_days, config.text)
 
   #config.text <- gsub("@OUTDIR@", settings$host$outdir, config.text)

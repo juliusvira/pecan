@@ -69,7 +69,7 @@ process.met <- function(values, units, times) {
   # aggregate to daily
   values[['year']] <- vapply(times, lubridate::year, 1)
   values[['doy']] <- vapply(times, lubridate::yday, 1)
-  values.daily <- aggregate(values, list(values$year, values$doy), mean)
+  values.daily <- aggregate(values, list(values$doy, values$year), mean)
   values.daily[['tdmin']] <- aggregate(values$air_temperature, list(values$year, values$doy), min)$x
   values.daily[['tdmax']] <- aggregate(values$air_temperature, list(values$year, values$doy), max)$x
   units[['tdmin']] <- units[['tdmax']] <- units[['air_temperature']]
