@@ -65,7 +65,6 @@ process.met <- function(values, units, times) {
     }
   }
 
-  
   # aggregate to daily
   values[['year']] <- vapply(times, lubridate::year, 1)
   values[['doy']] <- vapply(times, lubridate::yday, 1)
@@ -109,12 +108,27 @@ compose.met2model <- function(read.met.fcn, process.met.fcn) {
                          function(y) file.path(in.path, sprintf('%s.%i.nc', in.prefix, y)),
                          character(1))
     }
-    processed.lst <- lapply(files.in,
-                            function(name) {
-                              PEcAn.logger::logger.info(sprintf('processing met file: %s', name))
-                              from.file <- read.met.fcn(name)
-                              process.met.fcn(as.data.frame(from.file$values), from.file$units, from.file$times)})
-    processed <- do.call(rbind, processed.lst)
+    # read and join all data. Do this before aggregation, because the input files might
+    # not be exactly yearly.
+    inputs.read <- lapply(files.in,
+                          function(name) {
+                            PEcAn.logger::logger.info(sprintf('processing met file: %s', name))
+                            read.met.fcn(name)})
+    # check consistency
+    for (input in inputs.read) {
+      if (any(unlist(input$units) != unlist(inputs.read[[1]]$units))) {
+        PEcAn.logger::logger.severe('Units differ in files')
+      }
+    }
+    all.values <- do.call(rbind, lapply(inputs.read, function(ip) as.data.frame(ip$values)))
+    all.times <- do.call(c, lapply(inputs.read, function(ip) ip$times))
+    processed <- process.met.fcn(all.values, inputs.read[[1]]$units, all.times)
+    
+    daydiff <- diff(processed$doy)
+    if (any(daydiff > 1) || any(daydiff < 0 & daydiff > -365)) {
+      PEcAn.logger::logger.severe('Inconsistent met times')
+    }
+    
     # follow SIPNET
     out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),
                       strptime(end_date, "%Y-%m-%d"),
@@ -134,7 +148,6 @@ compose.met2model <- function(read.met.fcn, process.met.fcn) {
     }
     write.table(processed, out.file.full, quote = FALSE, sep = '\t', row.names = FALSE)
     return(results)
-    
   } 
   return(met2model.fcn)
 }

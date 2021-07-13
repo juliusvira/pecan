@@ -125,7 +125,6 @@ test_that('met2model.BASGRABGC succeeds with a test dataset', {
   table.6h <- read.table(result.6h[['file']], sep='\t', header = TRUE)
   result.1d <- met2model.BASGRABGC(dirpath, filename.1d, outfolder, start_date, end_date, full.path = TRUE)
   table.1d <- read.table(result.1d[['file']], sep='\t', header = TRUE)
-
   expect_equal(table.6h$T, table.1d$T, tolerance=1e-3)
   expect_equal(table.6h$RAINI, table.1d$RAINI, tolerance=1e-3)
   expect_equal(table.6h$T[1:6],
@@ -143,7 +142,7 @@ test_that('multi-year processing selects the right files',{
     list(values=list(path=file.path), units='', times=file.path)
   }
   process.met.stub <- function(values, units, times) {
-    data.frame(name=values[1])
+    data.frame(name=values[1], doy=c(1,2))
   }
   fcn <- compose.met2model(read.met.stub, process.met.stub)
   start_date <- ymdf('2000-01-01 00:00')
