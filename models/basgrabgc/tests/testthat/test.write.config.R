@@ -8,11 +8,12 @@ teardown(unlink(outfolder, recursive = TRUE))
 
 settings = list(host = list(rundir = outfolder, outdir = outfolder),
                 model = list(binary = '__binary__'),
-                run = list(start.date = '2001-01-02',
+                run = list(start.date = '2001-02-02',
                            end.date = '2002-01-01 01:00',
                            inputs = list(met = list(path = '__met__'),
                                          management = list(path = '__management__'),
-                                         soil = list(path = '__soil__'))),
+                                         soil = list(path = '__soil__')),
+                           site = list(lat = 10.0, lon = 40.0)),
                 rundir = outfolder)
 
 param.map.file.test <- 'test.param.map.csv'
@@ -70,8 +71,8 @@ test_that('The config file has the correct content', {
   lines <- strsplit(text, '\n')
   # the file is in fixed format
   expect_equal(as.integer(lines[[14]]), lubridate::year(settings$run$start.date))
-  expect_equal(as.integer(lines[[15]]), 2) # start_doy
-  expect_equal(as.integer(lines[[16]]), 365-1)
+  expect_equal(as.integer(lines[[15]]), 33) # start_doy
+  expect_equal(as.integer(lines[[16]]), 365-(33-1) + 1) # include the +1 day needed to get the last day to output
   expect_equal(lines[[20]], settings$run$inputs$met$path)
   expect_equal(lines[[22]], file.path(settings$rundir, run.id, "basgrabgc.param"))
   expect_equal(lines[[24]], settings$run$inputs$management$path)
