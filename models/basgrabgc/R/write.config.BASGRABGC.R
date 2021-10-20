@@ -47,6 +47,13 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   }
   pft.traits <- unlist(trait.values[[1]])
   pft.names <- names(pft.traits)
+
+  # The parameter mapping logic:
+  # - the param.map table contains all parameters needed by Basgra-BGC
+  # - only parameters that have a defined name.bethy and that name is in pft.names are mapped
+  # - conv2basgra unit conversion will be applied. If both unit.basgra and unit.bethy are blank, assume 1
+  # - if a parameter is not mapped, the default value is taken
+  
   map.row <- function(ind_row) {
     name.bethy <- param.map[ind_row, 'name.bethy']
     if (!is.na(name.bethy) && name.bethy %in% pft.names) {
@@ -60,7 +67,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
       value <- param.map[ind_row, 'default']
     }
     if (is.na(value)) {
-      PEcAn.logger::logger.severe(sprintf("Failed to map parameter: %s", name.bethy))
+      PEcAn.logger::logger.severe(sprintf("Failed to map parameter: %s -> %s", param.map[ind_row, 'name.basgra'], name.bethy))
     }
     value
   }
@@ -85,7 +92,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   } else {
     jobsh <- readLines(con = system.file("template.job", package = "PEcAn.BASGRABGC"), n = -1)
   }
-  
+
   # create host specific setttings
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
@@ -152,10 +159,17 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   config.text <- gsub("@PATH_PARAM@", param.file, config.text)
   config.text <- gsub("@OUT_PATH@", file.path(settings$host$outdir, run.id, filename), config.text)
   config.text <- gsub("@PATH_MANAGEMENT@", settings$run$inputs$management$path, config.text)
-  config.text <- gsub("@PATH_SOIL@", settings$run$inputs$soil$path, config.text)
+  if (!is.null(settings$run$inputs$poolinitcond$path)) {
+    # Allow overriding soil path using the poolinitcond 
+    soil.path <- settings$run$inputs$poolinitcond$path
+  } else {
+    soil.path <- settings$run$inputs$soil$path
+  }
+  config.text <- gsub("@PATH_SOIL@", soil.path, config.text)
   
   #-----------------------------------------------------------------------
   
   writeLines(config.text, con = config.file.path)
   PEcAn.logger::logger.info(sprintf('config file written to %s', config.file.path))
 } # write.config.MODEL
+

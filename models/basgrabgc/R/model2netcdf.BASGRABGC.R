@@ -7,9 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-
-die <- PEcAn.logger::logger.severe
-
 make_netcdf <- function(df_output, df_info, nc_path, sitelat, sitelon) {
   df_info_act <- df_info[df_info$name.bethy != '', ]
   year <- df_output[1, 'year']
@@ -39,7 +36,7 @@ make_netcdf <- function(df_output, df_info, nc_path, sitelat, sitelon) {
 
   nc <- ncdf4::nc_create(nc_path, var_lst)
   varfile <- file(sprintf('%s.var', nc_path), 'w')
-  # write variables
+  # write variables to the netcdf & the .var file
   for (ind_var in seq_along(var_lst)) {
     ncdf4::ncvar_put(nc, var_lst[[ind_var]], df_output[, var_lst[[ind_var]]$name])
     cat(paste(var_lst[[ind_var]]$name, var_lst[[ind_var]]$longname), file = varfile, sep = "\n")
@@ -56,7 +53,8 @@ split_by_year <- function(df) {
 process_output <- function(df.raw, df.info) {
   varnames <- df.info[df.info$name.basgra != '', 'name.basgra']
   if (ncol(df.raw) != length(varnames) + 3) {
-    PEcAn.logger::logger.severe('Wrong number of columns in output file')
+    PEcAn.logger::logger.severe(sprintf('Wrong number of columns in output file (%i expected, %i present',
+                                        length(varnames) + 3, ncol(df.raw)))
   }
   colnames(df.raw) <- c('decimal_year', 'year', 'doy', varnames)
 
@@ -68,10 +66,12 @@ process_output <- function(df.raw, df.info) {
     } else if (vars2extract[ind_row, 'name.basgra'] != '') {
       data.raw <- df.raw[,vars2extract[ind_row, 'name.basgra']]
       conv <- vars2extract[ind_row, 'conv2bethy']
-      if (is.na(conv)) PEcAn.logger::logger.severe(sprintf('Cannot unit-convert bethy variable: %s', vars2extract[ind_row, 'name.bethy']))
+      if (is.na(conv)) PEcAn.logger::logger.severe(sprintf('Cannot unit-convert bethy variable: %s',
+                                                           vars2extract[ind_row, 'name.bethy']))
       result <- data.raw*conv
     } else {
-      PEcAn.logger::logger.severe(sprintf('Cannot convert bethy variable: %s', vars2extract[ind_row, 'name.bethy']))
+      PEcAn.logger::logger.severe(sprintf('Cannot convert bethy variable: %s',
+                                          vars2extract[ind_row, 'name.bethy']))
     }
     return(result)
   }
@@ -84,11 +84,12 @@ process_output <- function(df.raw, df.info) {
 }
 
 
-
 date_from_year_doy <- function(year, doy) {
   lubridate::ymd(sprintf('%i-01-01', year)) + lubridate::days(doy-1)
 }
 
+# Compose the model2netcdf function from the output writing and output processing
+# functions.
 get_model2netcdf <- function(make_netcdf_func, get_output_func, get_out_info_func) {
   func <- function(outdir, sitelat, sitelon, start_date, end_date) {
     df_info <- get_out_info_func()
@@ -97,15 +98,20 @@ get_model2netcdf <- function(make_netcdf_func, get_output_func, get_out_info_fun
     output <- process_output(output.raw, df_info) # list(df_year1, df_year2, ...)
     num_years <- length(output)
     
-    # no subsetting but check that the start, end dates are equal
+    # no subsetting but check that the start, end dates match
     first_date_read <- date_from_year_doy(output[[1]][1, 'year'], output[[1]][1, 'doy'])
     num_days_last_yr <- nrow(output[[num_years]])
-    last_date_read <- date_from_year_doy(output[[num_years]][num_days_last_yr, 'year'], output[[num_years]][num_days_last_yr, 'doy'])
+    last_date_read <- date_from_year_doy(output[[num_years]][num_days_last_yr, 'year'],
+                                         output[[num_years]][num_days_last_yr, 'doy'])
 
     if (first_date_read != start_date) {
-      PEcAn.logger::logger.severe(sprintf('start_date mismatch: %s <> %s', as.character(first_date_read), as.character(start_date)))
+      PEcAn.logger::logger.severe(sprintf('start_date mismatch: %s <> %s',
+                                          as.character(first_date_read),
+                                          as.character(start_date)))
     } else if (last_date_read != end_date) {
-      PEcAn.logger::logger.severe(sprintf('end_date mismatch: %s <> %s', as.character(last_date_read), as.character(end_date)))
+      PEcAn.logger::logger.severe(sprintf('end_date mismatch: %s <> %s',
+                                          as.character(last_date_read),
+                                          as.character(end_date)))
     }
 
     for (ind_yr in seq_len(num_years)) {
@@ -135,5 +141,6 @@ model2netcdf.BASGRABGC <- get_model2netcdf(make_netcdf,
                                            get_output_func = function(filepath) {
                                              read.table(filepath)},
                                            get_out_info_func = function() {
-                                             read.csv(system.file('basgra-bgc.output.map.csv', package='PEcAn.BASGRABGC'))}
+                                             read.csv(system.file('basgra-bgc.output.map.csv',
+                                                                  package='PEcAn.BASGRABGC'))}
                                            )
