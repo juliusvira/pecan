@@ -96,7 +96,8 @@ test_that('make_netcdf writes what is required', {
   # expect_equal(var_table[,2], df.info$long_name[df.info$name.bethy != ''])
 })
 
-test_that('met2model passes with real input', {
+test_that('model2netcdf passes with real input', {
+  # the test.output should be created with the scr/make_test_data.sh script in the BASGRA-BGC directory
   func2file <- get_model2netcdf(make_netcdf,
                                 get_output_func = function(ignored) {
                                   read.table('test.output')},
@@ -105,8 +106,9 @@ test_that('met2model passes with real input', {
                                 )
   sitelat <- 0.0
   sitelon <- 0.1
-  start_date <- lubridate::ymd('2020-05-01')
-  end_date <- lubridate::ymd('2020-05-19')
+  start_date <- lubridate::ymd('1999-09-01')
+  end_date <- lubridate::ymd('1999-09-20')
+
   expect_silent(func2file(tmpdir, sitelat, sitelon, start_date, end_date))
   # capture the output sent to netcdf
   outputs <- list()
@@ -122,6 +124,6 @@ test_that('met2model passes with real input', {
   func2lst(tmpdir, sitelat, sitelon, start_date, end_date)
   expect_length(outputs, 1)
   expect_false(any(is.na(outputs[[1]])))
-  expect_equal(nrow(outputs[[1]]), 19)
-  expect_equal(outputs[[1]][19, 'leaf_carbon_content'], 13.46275*1e-3)
+  expect_equal(nrow(outputs[[1]]), 20)
+  expect_equal(outputs[[1]][20, 'leaf_carbon_content'], 91.02158*1e-3)
 })

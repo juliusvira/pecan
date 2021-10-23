@@ -124,4 +124,5 @@ sum_NH3,,,,,
 sum_LeachC,,,,,
 sum_LeachN,,,,,
 ECORES,,,,,
-,NEE,,kg m-2 s-1,,Net Ecosystem Exchange
+sum_CO2Litt,,g m-2 d-1
+,NEE,kg m-2 s-1,,,Net Ecosystem Exchange
