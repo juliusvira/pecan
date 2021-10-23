@@ -80,3 +80,14 @@ test_that('The config file has the correct content', {
   expect_equal(lines[[26]], path.out)
   expect_equal(lines[[28]], settings$run$inputs$soil$path)
 })
+
+test_that('Pool initial conditions overrides the soil path', {
+  my.settings <- settings
+  my.path <- 'soil.path.from.ic'
+  my.settings$run$inputs$poolinitcond$path <- my.path
+  write.config.BASGRABGC(defaults, trait.values.test, my.settings, run.id)
+  config.file.path <- file.path(outfolder, run.id, paste0("CONFIG.", run.id, ".txt"))
+  text <- readLines(con = config.file.path)
+  lines <- strsplit(text, '\n')
+  expect_equal(lines[[28]], my.path)
+})
