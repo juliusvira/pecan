@@ -115,6 +115,22 @@ test_that('process.met works', {
   expect_error(process.met(as.data.frame(values), units, times[1]))
 })
 
+test_that('process.met handles multi-year min,max,mean without messing the ordering up', {
+  df <- read.csv('problem.csv')
+  units <- list('air_temperature' = 'degC', # obviously not but just ignore it
+                'relative_humidity' = '',
+                'wind_speed' = 'm/s',
+                'precipitation_flux' = 'kg/m2/s',
+                'surface_downwelling_shortwave_flux_in_air' = 'W/m2')
+  times <- c('2019-01-01', '2019-01-02', '2020-01-01', '2020-01-02')
+  processed <- process.met(df, units, times)
+  # daily data so processed should be the same
+  expect_equivalent(as.matrix(processed[,c('T', 'RH', 'WNI')]), as.matrix(df[, c('air_temperature', 'relative_humidity', 'wind_speed')]))
+  expect_equal(processed[,'TMMXI'], df[, 'air_temperature'])
+  expect_equal(processed[,'TMMNI'], df[, 'air_temperature'])
+})
+
+
 test_that('met2model.BASGRABGC succeeds with a test dataset', {
   dirpath <- '.'
   filename.6h <- 'fakemet.6h.nc'

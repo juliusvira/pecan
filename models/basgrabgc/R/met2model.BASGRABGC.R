@@ -68,9 +68,10 @@ process.met <- function(values, units, times) {
   # aggregate to daily
   values[['year']] <- vapply(times, lubridate::year, 1)
   values[['doy']] <- vapply(times, lubridate::yday, 1)
+  # !!note that aggregate returns the rows ordered by the aggregation variables!!
   values.daily <- aggregate(values, list(values$doy, values$year), mean)
-  values.daily[['tdmin']] <- aggregate(values$air_temperature, list(values$year, values$doy), min)$x
-  values.daily[['tdmax']] <- aggregate(values$air_temperature, list(values$year, values$doy), max)$x
+  values.daily[['tdmin']] <- aggregate(values$air_temperature, list(values$doy, values$year), min)$x
+  values.daily[['tdmax']] <- aggregate(values$air_temperature, list(values$doy, values$year), max)$x
   units[['tdmin']] <- units[['tdmax']] <- units[['air_temperature']]
 
   # collect into a data frame with the basgra format and units
