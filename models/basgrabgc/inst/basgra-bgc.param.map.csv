@@ -35,7 +35,7 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 34,RUBISC,rubisco_content,g m-2,g m-2,1,4.553,Rubisco content of upper leaves 
 35,SHAPE,shape,,,,0.8442,Area of a leaf relative to a rectangle of same length and width
 36,SIMAX1T,elongating_tiller_sink_strength,g C tiller-1 d-1,g C tiller-1 d-1,1,0.005471,Sink strength of small elongating tillers
-37,SLAMAX,SLAMAX,m2 g C-1,m2 kg C-1,1,0.0781,Maximum SLA of new leaves
+37,SLAMAX,SLAMAX,m2 g-1 C-1,m2 kg-1 C-1,0.001,0.0781,Maximum SLA of new leaves
 38,TBASE,gdd_tbase,deg C,deg C,1,2.766,Minimum value of effective temperature for leaf elongation
 39,TCRES,tc_res,d,d,1,2.639,Time constant of mobilisation of reserves
 40,TOPTGE,TOpt_ge,deg C,deg C,1,21.37,Optimum temperature for vegetative tillers becoming generative
@@ -127,11 +127,11 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 126,CN_som1,,,,,10,C/N ration for active som pool
 127,CN_som2,,,,,50,C/N ration for slow som pool
 128,CN_som3,,,,,100,C/N ration for passive som pool
-129,k0_lit1,,a-1,,,4.5914806923,the potential decompostion rate for fast pool
-130,k0_lit2,,a-1,,,1.3723666365,the potential decompostion rate for slow pool
-131,k0_som1,,a-1,,,0.6019528473,the potential decompostion rate for active som pool
-132,k0_som2,,a-1,,,0.0406847942,the potential decompostion rate for slow som pool
-133,k0_som3,,a-1,,,0.0004286123,the potential decompostion rate for passive som pool
+129,k0_lit1,,a-1,,,4.5914806923,the potential decomposition rate for fast pool
+130,k0_lit2,,a-1,,,1.3723666365,the potential decomposition rate for slow pool
+131,k0_som1,decomp_rate_som_act,a-1,yr-1,1,0.6019528473,the potential decomposition rate for active som pool
+132,k0_som2,decomp_rate_som_slow,a-1,yr-1,1,0.0406847942,the potential decomposition rate for slow som pool
+133,k0_som3,,,,,0.0004286123,the potential decomposition rate for passive som pool
 134,rlit1,,,,,0.5600935723,respiration fraction of fast litter pool
 135,rlit2,,,,,0.4466034606,respiration fraction of slow litter pool
 136,rsom1,,,,,0.261270146,respiration fraction of active som pool
