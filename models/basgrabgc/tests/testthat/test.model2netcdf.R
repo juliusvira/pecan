@@ -125,5 +125,5 @@ test_that('model2netcdf passes with real input', {
   expect_length(outputs, 1)
   expect_false(any(is.na(outputs[[1]])))
   expect_equal(nrow(outputs[[1]]), 20)
-  expect_equal(outputs[[1]][20, 'leaf_carbon_content'], 91.02158*1e-3)
+  expect_equal(outputs[[1]][20, 'leaf_carbon_content'], 91.022*1e-3)
 })

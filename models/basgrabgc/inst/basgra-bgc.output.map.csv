@@ -125,4 +125,5 @@ sum_LeachC,,,,,
 sum_LeachN,,,,,
 ECORES,,,,,
 sum_CO2Litt,,g m-2 d-1
+HARVC,,g m-2 d-1,,,Harvest C
 ,NEE,kg m-2 s-1,,,Net Ecosystem Exchange

@@ -9,7 +9,7 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 8,FRTILGI,,,,,0.3993,
 9,LT50I,,degrees C,,,-4.7894,Temperature that kills half the plants in a day
 10,CLAIV,,,,,0.5692,"Maximum LAI remaining after harvest, when no tillers elongate"
-11,COCRESMX,,,,,0.1451,Maximum concentration of reserves in aboveground biomass (not stubble)
+11,COCRESMX,,,,,0.3,Maximum concentration of reserves in aboveground biomass (not stubble)
 12,CSTAVM,,g C tiller-1,,,1.112,Maximum size of elongating tillers 
 13,DAYLB,min_daylength_reset,d d-1,d d-1,1,0.5329,Day length below which phenological stage is reset to zero
 14,DAYLP,min_daylength_slow,d d-1,d d-1,1,0.7104,Day length below which phenological stage slows down
@@ -54,7 +54,7 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 53,FO2MX,,mol mol-1,,,0.2008,Maximum oxygen fraction of soil gas
 54,gamma,,m-1,,,68.86,Temperature extinction coefficient of snow
 55,Hparam,,deg C-1 d-1,,,0.008262,Hardening parameter  
-56,KRDRANAER,,d-1,,,0.6396,Maximum relative death rate due anaerobic conditions
+56,KRDRANAER,,d-1,,,0.1,Maximum relative death rate due anaerobic conditions
 57,KRESPHARD,,g C g-1 C deg C -1,,,0.02244,Carbohydrate requirement of hardening
 58,KRSR3H,,deg C -1,,,0.9618,Constant in the logistic curve for frost survival
 59,KRTOTAER,total2RA,,,,1.775,Ratio of total to aerobic respiration  
@@ -70,7 +70,7 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 69,RHOpack,,d-1,,,0.02187, Relative packing rate of snow  
 70,SWret,,mm mm-1 d-1,,,0.08415, Liquid water storage capacity of snow  
 71,SWrf,,mm d-1 deg C -1,,,0.0104,Maximum refreezing rate per degree below TmeltFreeze
-72,THARDMX,THard_max,deg C,deg C,1,14.82,Maximum surface temperature at which hardening is possible
+72,THARDMX,,deg C,deg C,1,14.82,Maximum surface temperature at which hardening is possible
 73,TmeltFreeze,,deg C,,,0,Temperature above which snow melts  
 74,TrainSnow,,deg C,,,0.01062,Temperature below which precipitation is snow
 75,TsurfDiff,,deg C,,,3.353,Constant in the calculation of dehardening rate 
@@ -166,3 +166,5 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 165,MR_Q10,,,,,2,Q10 value for MR (temperature effect)
 166,DTrans,,m,,,0.1380514934,coefficient for transpiration allocation
 167,Omax1,,,,,0.008,maximum ratio of total CH4 for oxidation
+168,r0_som1,fract_init_som1,,,,0.03,Fraction of initial C in active SOM
+169,r0_som3,,,,,0.0,Fraction of initial C in passive SOM
