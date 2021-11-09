@@ -104,20 +104,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     con <- NULL
   }
   
-  if(!remote){
-    bety <- dplyr::src_postgres(dbname = settings$database$bety$dbname,
-                                host = settings$database$bety$host, 
-                                user = settings$database$bety$user, 
-                                password = settings$database$bety$password)
-  }else{
-    bety     <- list()
-    bety$con <- NULL
-  }
-
-  
   ## Load priors
   if(is.null(external.priors)){
-    temp        <- pda.load.priors(settings, bety$con, run.normal)
+    temp        <- pda.load.priors(settings, con, run.normal)
     prior.list  <- temp$prior
     settings    <- temp$settings
   }else{
@@ -128,7 +117,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   
   
   if(is.null(external.data)){
-    inputs <- load.pda.data(settings, bety, external.formats)
+    inputs <- load.pda.data(settings, con, external.formats)
   }else{
     inputs <- external.data
   }
@@ -301,7 +290,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     ## read model outputs    
     for (i in seq_len(settings$assim.batch$n.knot)) {
-      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs, external.formats)
+      align.return <- pda.get.model.output(settings, run.ids[i], con, inputs, external.formats)
       model.out[[i]] <- align.return$model.out
       if(all(!is.na(model.out[[i]]))){
         inputs <- align.return$inputs
@@ -755,6 +744,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # I can use a counter to run pre-defined number of emulator rounds
   if(is.null(settings$assim.batch$round_counter)){
     settings$assim.batch$round_counter <- 1
+    settings$assim.batch$extension     <- "round" 
   }else{
     settings$assim.batch$round_counter <- 1 +  as.numeric(settings$assim.batch$round_counter)
   }
