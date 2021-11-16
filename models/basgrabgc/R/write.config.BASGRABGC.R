@@ -7,6 +7,53 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+process.traits <- function(trait.values, settings) {
+  #if (length(trait.values) > 2 || (length(trait.values) == 2 && names(trait.values)[2] != 'env')) {
+  #  # allow env samples 
+  #  PEcAn.logger::logger.severe("More than 1 pft not supported")
+  #}
+
+  if (!is.null(settings$run$inputs$basgrabgc.param.map.file)) {
+    # mainly for injecting a specific parameter map in the unit test
+    PEcAn.logger::logger.info("Using", settings$run$inputs$basgrabgc.param.map.file, "as a parameter map")
+    param.map <- read.csv(file = settings$run$inputs$basgrabgc.param.map.file)
+  } else {
+    param.map <- read.csv(file = system.file("basgra-bgc.param.map.csv", package = "PEcAn.BASGRABGC"))
+  }
+
+  pft.traits <- unlist(trait.values)
+  pft.names <- names(pft.traits)
+  if (any(duplicated(pft.names))) {
+    PEcAn.logger::logger.severe(paste0(c('Duplicated traits in:', pft.names)))
+  }
+  # The parameter mapping logic:
+  # - the param.map table contains all parameters needed by Basgra-BGC
+  # - only parameters that have a defined name.bethy and that name is in pft.names are mapped
+  # - conv2basgra unit conversion will be applied. If both unit.basgra and unit.bethy are blank, assume 1
+  # - if a parameter is not mapped, the default value is taken
+    
+  map.row <- function(ind_row) {
+    name.bethy <- param.map[ind_row, 'name.bethy']
+    if (!is.na(name.bethy) && name.bethy %in% pft.names) {
+      conv <- param.map[ind_row, 'conv2basgra']
+      if (is.na(conv) && param.map[ind_row, 'unit.basgra'] == '' && param.map[ind_row, 'unit.bethy'] == '') {
+        # only assume no conversion if both bethy and basgra quantities are marked unitless
+        conv <- 1.0
+      }
+      value <- pft.traits[which(pft.names == name.bethy)] * conv
+    } else {
+      value <- param.map[ind_row, 'default']
+    }
+    if (is.na(value)) {
+      PEcAn.logger::logger.severe(sprintf("Failed to map parameter: %s -> %s", param.map[ind_row, 'name.basgra'], name.bethy))
+    }
+    value
+  }
+
+  params <- vapply(seq_len(nrow(param.map)), map.row, 1.0)
+  df.params <- data.frame(name=param.map$name.basgra, value=params)
+}
+
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a MODEL config file.
 ##'
@@ -33,49 +80,13 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   # Also, `require()` should be used only when a package dependency is truly
   # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
 
-  if (!is.null(settings$run$inputs$basgrabgc.param.map.file)) {
-    # mainly for injecting a specific parameter map in the unit test
-    PEcAn.logger::logger.info("Using", settings$run$inputs$basgrabgc.param.map.file, "as a parameter map")
-    param.map <- read.csv(file = settings$run$inputs$basgrabgc.param.map.file)
-  } else {
-    param.map <- read.csv(file = system.file("basgra-bgc.param.map.csv", package = "PEcAn.BASGRABGC"))
-  }
   
-  if (length(trait.values) > 2 || (length(trait.values) == 2 && names(trait.values)[2] != 'env')) {
-    # allow env samples 
-    PEcAn.logger::logger.severe("More than 1 pft not supported")
-  }
-  pft.traits <- unlist(trait.values[[1]])
-  pft.names <- names(pft.traits)
-
-  # The parameter mapping logic:
-  # - the param.map table contains all parameters needed by Basgra-BGC
-  # - only parameters that have a defined name.bethy and that name is in pft.names are mapped
-  # - conv2basgra unit conversion will be applied. If both unit.basgra and unit.bethy are blank, assume 1
-  # - if a parameter is not mapped, the default value is taken
   
-  map.row <- function(ind_row) {
-    name.bethy <- param.map[ind_row, 'name.bethy']
-    if (!is.na(name.bethy) && name.bethy %in% pft.names) {
-      conv <- param.map[ind_row, 'conv2basgra']
-      if (is.na(conv) && param.map[ind_row, 'unit.basgra'] == '' && param.map[ind_row, 'unit.bethy'] == '') {
-        # only assume no conversion if both bethy and basgra quantities are marked unitless
-        conv <- 1.0
-      }
-      value <- pft.traits[which(pft.names == name.bethy)] * conv
-    } else {
-      value <- param.map[ind_row, 'default']
-    }
-    if (is.na(value)) {
-      PEcAn.logger::logger.severe(sprintf("Failed to map parameter: %s -> %s", param.map[ind_row, 'name.basgra'], name.bethy))
-    }
-    value
-  }
-
-  params <- vapply(seq_len(nrow(param.map)), map.row, 1.0)
+  
   # write params into a file
+
+  df.params <- process.traits(trait.values, settings)
   param.file <- file.path(settings$rundir, run.id, "basgrabgc.param")
-  df.params <- data.frame(name=param.map$name.basgra, value=params)
   conn <- file(param.file, 'w')
   cat(nrow(df.params), file = conn, sep = '\n') # first line in the number of params
   write.table(df.params, file = conn, col.names = FALSE, row.names = FALSE, quote = FALSE)

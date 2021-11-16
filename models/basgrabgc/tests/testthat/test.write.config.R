@@ -44,6 +44,26 @@ test_that('Parameters are mapped and converted according to the table', {
   expect_equal(param.names, param.map$name.basgra)
 })
 
+test_that('process.traits combines traits for multiple pfts', {
+  my.settings <- settings
+  my.settings$run$inputs$basgrabgc.param.map.file <- param.map.file.test
+  more.traits <- list(fourth=4, fifth=5)
+
+  df.param.pft1 <- process.traits(trait.values.test, my.settings)
+  df.param.pft2 <- process.traits(list(more.traits), my.settings)
+  traits.all <- list(trait.values.test[[1]], more.traits)
+  df.param.all <- process.traits(traits.all, my.settings)
+
+  expect_equal(df.param.pft1[1, 'value'], df.param.all[1, 'value'])
+  expect_equal(df.param.pft1[2, 'value'], df.param.all[2, 'value'])
+  expect_equal(df.param.pft2[4, 'value'], df.param.all[4, 'value'])
+  expect_equal(df.param.pft2[5, 'value'], df.param.all[5, 'value'])
+})
+
+test_that('process.traits fails with duplicate traits', {
+  expect_error(process.traits(list(list(foo=1), list(foo=1, bar=2)), settings))
+})
+
 test_that('Mapping the parameters with the full table passes without errors', {
   param.map <- read.csv(file = system.file("basgra-bgc.param.map.csv", package = "PEcAn.BASGRABGC"))
   # create a trait.values with a value for all variables with a name.bethy in the param.map
