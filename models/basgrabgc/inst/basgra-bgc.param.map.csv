@@ -138,7 +138,7 @@ ind.basgra,name.basgra,name.bethy,unit.basgra,unit.bethy,conv2basgra,default,des
 137,rsom2,,,,,0.5404747313,respiration fraction of slow som pool
 138,rsom3,,,,,0.8794325153,respiration fraction of passive som pool
 139,rdoc,,,,,0.05,fraction of doc
-140,Q10,,,,,2.0706004162,the proportional decrease in decomposition rate for a 10 degree decrease in temperature
+140,Q10,soil_respiration_Q10,,,,2.0706004162,the proportional decrease in decomposition rate for a 10 degree decrease in temperature
 141,Tref,,deg C,,,20,reference temperature
 142,De,,m,,,1.4684476833,e-folding depth
 143,kroot,,,,,0.1,acid decompostion rate of root
