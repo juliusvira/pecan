@@ -42,7 +42,6 @@ read.met <- function(file.path) {
 }
 
 process.met <- function(values, units, times) {
-  #browser()
   if (!('wind_speed' %in% names(values))) {
     # evaluate wind speed before averaging
     values[['wind_speed']] <- sqrt(values$northward_wind^2 + values$eastward_wind^2)
@@ -91,9 +90,6 @@ process.met <- function(values, units, times) {
                         RAINI = uc('precipitation_flux', 'kg/m2/day'),
                         WNI = uc('wind_speed', 'm/s'),
                         GR = uc('surface_downwelling_shortwave_flux_in_air', 'MJ/m2/day'))
-                        
-  
-  
 }
                      
 
