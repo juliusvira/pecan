@@ -21,6 +21,8 @@ process.traits <- function(trait.values, settings) {
     param.map <- read.csv(file = system.file("basgra-bgc.param.map.csv", package = "PEcAn.BASGRABGC"))
   }
 
+  # extract the names without prefixing the pft name
+  names(trait.values) <- NULL
   pft.traits <- unlist(trait.values)
   pft.names <- names(pft.traits)
   if (any(duplicated(pft.names))) {
@@ -79,12 +81,7 @@ write.config.BASGRABGC <- function(defaults, trait.values, settings, run.id) {
   #    `packageName::functionName()`.
   # Also, `require()` should be used only when a package dependency is truly
   # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
-
   
-  
-  
-  # write params into a file
-
   df.params <- process.traits(trait.values, settings)
   param.file <- file.path(settings$rundir, run.id, "basgrabgc.param")
   conn <- file(param.file, 'w')

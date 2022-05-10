@@ -51,7 +51,7 @@ test_that('process.traits combines traits for multiple pfts', {
 
   df.param.pft1 <- process.traits(trait.values.test, my.settings)
   df.param.pft2 <- process.traits(list(more.traits), my.settings)
-  traits.all <- list(trait.values.test[[1]], more.traits)
+  traits.all <- list(first=trait.values.test[[1]], second=more.traits)
   df.param.all <- process.traits(traits.all, my.settings)
 
   expect_equal(df.param.pft1[1, 'value'], df.param.all[1, 'value'])
@@ -61,7 +61,7 @@ test_that('process.traits combines traits for multiple pfts', {
 })
 
 test_that('process.traits fails with duplicate traits', {
-  expect_error(process.traits(list(list(foo=1), list(foo=1, bar=2)), settings))
+  expect_error(process.traits(list(pft1=list(foo=1), pft2=list(foo=1, bar=2)), settings))
 })
 
 test_that('Mapping the parameters with the full table passes without errors', {
