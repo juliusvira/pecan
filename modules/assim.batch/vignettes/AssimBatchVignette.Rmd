@@ -3,7 +3,7 @@ title: "PEcAn.assim.batch Vignette"
 author: 
 - "Istem Fer"
 - "Ryan Kelly"
-date: "November 15, 2021"
+date: "January 5, 2022"
 output: html_vignette
 vignette: >
   %\VignetteIndexEntry{PEcAn.assim.batch Vignette}
@@ -32,7 +32,7 @@ Currently, there are three ways of doing Parameter Data Assimilation (PDA) in PE
 
 ### Which one to use?
 
-**bayesian.tools :** The `pda.bayesian.tools.R` is the main script of this PDA workflow that performs a bruteforce (MCMC methods that require running your models at least couple of thousand of times) calibration. This script uses the `BayesianTools` R-package (Hartig, Minuno and Paul, 2019) that includes MCMC and SMC samplers and other tools for Bayesian parameter calibration with external models. If you choose *bayesian.tools* option, PEcAn framework will hand the PDA calculations over to the `BayesianTools` package. Although this package includes algorithms that are designed to explore the parameter space more efficiently than the traditional MH-MCMC, you would still need a relatively faster model to use these algorithms. Note that the `BayesianTools` R-package itself is constantly under development, and its integration with PEcAn may not be possible to leverage all `BayesianTools` functionality through PEcAn.
+**bayesian.tools :** The `pda.bayesian.tools.R` is the main script of this PDA workflow that performs a bruteforce (MCMC methods that require running your models at least couple of thousand of times) calibration. This script uses the `BayesianTools` R-package (Hartig, Minuno and Paul, 2019) that includes MCMC and SMC samplers and other tools for Bayesian parameter calibration with external models. If you choose *bayesian.tools* option, PEcAn framework will hand the PDA calculations over to the `BayesianTools` package. Although this package includes algorithms that are designed to explore the parameter space more efficiently than the traditional MH-MCMC, you would still need a relatively faster model to use these algorithms. Note that the `BayesianTools` R-package itself is constantly under development, and its integration with PEcAn may not be able to leverage all `BayesianTools` functionality.
 
 **emulator :** The `pda.emulator.R` is the main script of this PDA workflow. When a model is slow, it is practically not possible to run it hundreds of thousands of times sequentially to explore the parameter space and draw enough samples to converge the target distribution with bruteforce algorithms. Instead, we can run the model for a relatively smaller number of times with parameter combinations that have been carefully chosen to give good coverage of parameter space. Then we can interpolate the likelihood calculated for each of those runs to get a surface that "emulates" the true likelihood and perform regular MCMC (just like the "bruteforce" approach), except instead of actually running the model on every iteration to obtain a likelihood value, this time we will just get an approximation from the likelihood emulator. A lot more details about the emulator approach can be found in [Fer et al. 2018.](https://doi.org/10.5194/bg-15-5801-2018)
 
@@ -53,33 +53,37 @@ The easiest way to use PEcAn's parameter data assimilation module is to add an `
     <param>PARAM2</param>
    </temperate.coniferous>
   </param.names>
+  <jump>
+   <adapt>250</adapt>
+   <adj.min>0.1</adj.min>
+   <ar.target>0.3</ar.target>
+  </jump>
   <inputs>
     <file>
-      <input.id> ... </input.id>                <--- YOUR CONSTRAINT ID FROM BETY DB 
+      <input.id> ... </input.id>               <--- YOUR CONSTRAINT ID FROM BETY DB 
       <path>
-        <path> ... </path>                      <--- YOUR CONSTRAINT FILE PATH
+        <path> ... </path>                     <--- YOUR CONSTRAINT FILE PATH(S)
         <path> ... </path>
       </path>
-      <likelihood>Laplace</likelihood>          <--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
-      <variable.id>298</variable.id>            <--- (CONSTRAINT) VARIABLE ID FROM BETY DB
+      <likelihood>Laplace</likelihood>         <--- LIKELIHOOD FORM FOR THIS CONSTRAINT 
+      <variable.id>298</variable.id>           <--- (CONSTRAINT) VARIABLE ID FROM BETY DB
       <variable.name>
-        <variable.name>LE</variable.name>       <--- (CONSTRAINT) VARIABLE
-        <variable.name>UST</variable.name>      <--- HELPER VARIABLE SPECIFIC TO FLUX CASE
+        <variable.name>LE</variable.name>      <--- (CONSTRAINT) VARIABLE
+        <variable.name>UST</variable.name>     <--- HELPER VARIABLE SPECIFIC TO FLUX CASE
       </variable.name>
     </file>
-  </inputs>
-  <inputs>
     <file>
       <input.id>...</input.id>
       <path>
         <path>...</path>
       </path>
-    <likelihood>multipGauss</likelihood>
-    <hyper.pars>
-      <parama>0.001</parama>                    <--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
-      <paramb>0.001</paramb>
-    </hyper.pars>
-    <ss.positive>TRUE</ss.positive>
+      <likelihood>multipGauss</likelihood>
+      <hyper.pars>
+        <parama>0.001</parama>                 <--- HYPERPARAMETERS SPECIFIC TO GAUSSIAN FORM
+        <paramb>0.001</paramb>
+      </hyper.pars>
+      <ss.positive>TRUE</ss.positive>
+      <variable.id>...</variable.id> 
       <variable.name>
         <variable.name>...</variable.name>
       </variable.name>
@@ -94,7 +98,7 @@ Here are some more details about the PDA tags:
 
 * `<iter>` Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing. 
 
-* `<chain>` Specifies the number of MCMC chains to be run.
+* `<chain>` Specifies the number of MCMC chains to be run. Defaults to 2. Note that some of the post-processing functions will look for at least 2 chains for diagnostics.
 
 * `<prior>` Identifies the prior to be used for PDA. Can be one of either:
 
@@ -111,63 +115,58 @@ data(trait.dictionary, package = "PEcAn.utils")
 
 head(trait.dictionary[,c("id", "figid")])
 ```
+You can inspect your `write.config.MODEL.R` script for standard parameter names and their mappings to model parameter names.
 
            NOTE : `<param.names>` chunk should always be on your xml file regardless of the method you use in the PDA.
            
 * `<inputs>` Observation (constraint) data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating flux datasets numerous times using the NEE/FC or LE variables. 
-
      
-    + `<file>` [REVISE] Denotes a set of tags for a single input. Would be repeated for multiple datasets/variables, e.g. in this case note the differences in `<variable.id>` and `<variable.name>` :
+    + `<file>` Denotes a set of tags for a single input (constraint data). Would be repeated for multiple datasets/variables, e.g. in this case note the differences in `<variable.id>` and `<variable.name>` :
     
     ```
     ...
     <inputs>
-      <file>
-        <input.id>1000000384</input.id>
-        <path>
-          <path>/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2005.nc</path>
-          <path>/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2006.nc</path>
-        </path>
-        <likelihood>Laplace</likelihood>
-        <variable.id>298</variable.id>
-        <variable.name>
-          <variable.name>LE</variable.name>
-          <variable.name>UST</variable.name>
-        </variable.name>
-      </file>
-      <file>
-        <input.id>1000000384</input.id>
-        <path>
-          <path>/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2005.nc</path>
-          <path>/fs/data1/pecan.data/input/Ameriflux_site_0-796/US-Bar.2006.nc</path>
-        </path>
-        <likelihood>Laplace</likelihood>
-        <variable.id>1000000042</variable.id>
-        <variable.name>
-          <variable.name>FC</variable.name>
-          <variable.name>UST</variable.name>
-        </variable.name>
-      </file>
+     <file>
+      <input.id>15000000028</input.id>   
+      <path>
+       <path>/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path> 
+      </path>
+      <likelihood>Laplace</likelihood>
+      <variable.id>297</variable.id>
+      <variable.name>
+       <variable.name>NEE</variable.name>
+       <variable.name>UST</variable.name>
+      </variable.name>
+     </file>   
+     <file>
+      <input.id>15000000028</input.id>   
+      <path>
+       <path>/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path> 
+      </path>
+      <likelihood>Laplace</likelihood>
+      <variable.id>298</variable.id>
+      <variable.name>
+       <variable.name>LE</variable.name>
+       <variable.name>UST</variable.name>
+      </variable.name>
+     </file>
     </inputs>
     ...
     ```
     + `<input.id>` BETY input ID for looking up the input. 
     + `<path>` File path to the input. Both `<id>` and `<path>` of the observation data should be supplied for the PDA. 
     + `<source>` A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no `<id>` or `<path>` is given.
-      + `<likelihood>` Identifier for the likelihood to use. E.g., the Ameriflux NEE/FC and LE data use a Laplacian likelihood. 
-      + `<hyper.pars>` Optional. Hyperparameters for your likelihood. E.g. Prior parameters of the precision for Gaussian likelihood. Defaults to scaled values if not provided. 
-      + `<variable.id>` The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default `<likelihood>` to variable.id values (allowing `<likelihood>` to be omitted from pecan.xml). 
+    + `<likelihood>` Identifier for the likelihood to use. E.g., the Ameriflux NEE/FC and LE data use a Laplacian likelihood. 
+    + `<hyper.pars>` Optional. Hyperparameters for your likelihood. E.g. Prior parameters of the precision for Gaussian likelihood. Defaults to scaled values if not provided. 
+    + `<ss.positive>` When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound. 
+    + `<variable.id>` The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default `<likelihood>` to variable.id values (allowing `<likelihood>` to be omitted from pecan.xml). 
       
            NOTE : `<inputs>` chunk should always be on your xml file regardless of the method you use in the PDA.
            
-           
-* `<jump>` Settings for the specifics of the proposal schema and adaptation functionality. 
+* `<jump>` Settings for the specifics of the proposal schema and adaptation functionality. It is used in the `emulator` approach, it's possible to set adaptation options using `bayesian.tools` specific tags as well (see below for `<bt.settings>`).
      + `<ar.target>` Target acceptance rate for the adaptive jump algorithm. Defaults to 0.5 if missing. 
-     + `<adapt>` Number of iterations between jump variance adaptations. Defaults to `floor(iter/10)` if missing. If set equal to the number of `<iter>`, basically turns off the adaptation functionality, it is not recommended to turn-off this functionality.
+     + `<adapt>` Number of iterations between jump variance adaptations. Defaults to `floor(iter/10)` if missing. If set equal to the number of `<iter>`, basically turns off the adaptation functionality, it is not recommended to turn-off this functionality for the emulator approach.
      + `<adj.min>` Minimum factor by which to reduce jump variance when adapting. Prevents jump variances from degenerating to 0. Defaults to 0.1 if missing. 
-* `<diag.plot.iter>` Interval between saving diagnostic plots. Omit or set to NULL to skip them.
-* `<params.id>` (Not shown.) A BETY dbfile ID for an MCMC output from previous PDA. If specified, that file is loaded, the new MCMC starts from the last parameter values of the previous, and when finished the extended chain is saved as a new output. If missing, then MCMC starts fresh from prior median parameter values. Regardless, the MCMC parameter values of the PDA are saved to file and inserted in BETY, and the new dbfile ID is inserted into `<params.id>`. The `pda.mcmc()` funtion returns the `<assim.batch>` settings, which can then be saved. Then, calling a new round of PDA using these returned settings will automatically continue the previous MCMC. 
-
 
 
 ## Method specific settings
@@ -260,7 +259,7 @@ Now you can read in your `pecan.PDA.xml` and run PDA (This will take some time, 
 settings <- read.settings("pecan.PDA.xml")
 settings_PDA_round1 <- pda.emulator(settings)
 ```
-The PDA workflow has populated you `settings` list object with couple of relevant tags, settings_PDA_round1 has these additional tags (as well as the `pecan.pdaR1_ENS_ID.xml` file that is automatically written to your workflow directory). These tags look like this:
+The PDA workflow has populated you `settings` list object with couple of relevant tags. Now `settings_PDA_round1` has these additional tags (note that this post-PDA `settings` list is also automatically written to your workflow directory as `pecan.pdaR1_ENS_ID.xml`). These tags look like this:
 
 ```
   <prior>
@@ -291,17 +290,75 @@ Rest of the tags are for the emulator workflow to be able to find previous round
      
     + `<extension>round</extension>` this extension run proposes new points in the parameter space in addition to the previous ones, and builds a new emulator including these additional points for a new MCMC sampling. These new points can come from both your inital PDA prior and the posterior of your first round of emulator run. You can determine the percentage of new knots coming from the posterior of your previous run in the `<knot.par>` tag. If you leave it empty, 90% of your new points will be drawn from the posterior of your previous run by default.
     
-Now you can either pass the post PDA settings in your environment to the pda.emulator() function again (yes you can put this in a loop) or you can re-read your `pecan.pdaR1_ENS_ID.xml` at any time to perform an iterative emulator round.
+Now you can either pass the post PDA settings in your environment to the `pda.emulator()` function again (yes you can put this in a loop) or you can re-read your `pecan.pdaR1_ENS_ID.xml` at any time to perform an iterative emulator round.
 ```
 ### settings_PDA_round1 <- read.settings("pecan.pdaR1_ENS_ID.xml")
 settings_PDA_round2 <- pda.emulator(settings_PDA_round1)
 ```
 
-Before moving on to the `BayesianTools` case, here is an example assim.batch block for a case where you constrain parameters of more than one model PFT with more than one Ameriflux data stream: todo...
-
+Before moving on to the `BayesianTools` case, here is what your `pecan.PDA.xml` could look like for a case where you constrain parameters of more than one model PFT with more than one Ameriflux data stream, note the ordering in `<assim.batch><param.names>` and `<pfts>`: 
+```
+...
+ <assim.batch>
+  ...
+  <param.names>
+   <PFT1>
+    <param>PFT1_PDA_param1</param>
+    <param>PFT1_PDA_param2</param>
+   </PFT1>
+   <PFT2>
+    <param>PFT2_PDA_param1</param>
+    <param>PFT2_PDA_param2</param>
+    <param>PFT2_PDA_param3</param>
+   </PFT2>
+  </param.names>
+  ...
+  <inputs>
+   <file>
+    <input.id>YOURINPUTID</input.id>   
+    <path>
+     <path>/YOURPATH/AmerifluxLBL_site_***/AMF_***_BASE_HH_***.csv</path> 
+    </path>
+    <likelihood>Laplace</likelihood>
+    <variable.id>297</variable.id>
+    <variable.name>
+     <variable.name>NEE</variable.name>
+     <variable.name>UST</variable.name>
+    </variable.name>
+   </file>   
+   <file>
+    <input.id>YOURINPUTID</input.id>   
+    <path>
+     <path>/YOURPATH/AmerifluxLBL_site_***/AMF_***_BASE_HH_***.csv</path> 
+    </path>
+    <likelihood>Laplace</likelihood>
+    <variable.id>298</variable.id>
+    <variable.name>
+     <variable.name>LE</variable.name>
+     <variable.name>UST</variable.name>
+    </variable.name>
+   </file>
+  </inputs>
+  ...
+ </assim.batch>
+ ...
+ <pfts>
+  <pft>
+   <name>PFT1</name>
+   <outdir>/YOUR/WORKFLOWS/PATH/PEcAn_WORKFLOWID/pft/PFT1</outdir>
+   <posteriorid>PFT1_POSTID</posteriorid>
+  </pft>
+  <pft>
+   <name>PFT2</name>
+   <outdir>/YOUR/WORKFLOWS/PATH/PEcAn_WORKFLOWID/pft/PFT2</outdir>
+   <posteriorid>PFT2_POSTID</posteriorid>
+  </pft>
+ </pfts>
+ ...
+```
 ## 2. PEcAn data pipeline with BayesianTools
 
-Using the bruteforce PDA approach with one of the MCMC-flavors as implemented in the BayesianTools R-package requires a few additional tags to configure its setup. **pda.bayesian.tools()** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
+Using the bruteforce PDA approach with one of the MCMC-flavors as implemented in the BayesianTools R-package requires slightly different tags to configure its setup. **pda.bayesian.tools()** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
 
 * Metropolis
      + Standard MH-MCMC
@@ -337,31 +394,30 @@ The name of the chosen sampler would be passed under `<sampler>` tag within the 
   ...
 ```
 
-We will check out the `<assim.batch>` block for the good old MH-MCMC and the DREAMzs (recommended) algorithms.
+The rest of the `<assim.batch>` block is the same (except you can now omit the `<jump>` tag as it takes no effect in this case). While all the algorithms can be accessed by the “Metropolis” sampler in BayesianTools package by specifying the sampler’s settings, it could be easier to directly pass the sampler name explicitly. Below is an example for DREAMzs (recommended) algorithm:
 ```
  <assim.batch>
    <method>bayesian.tools</method>
    <bt.settings>
      <sampler>DREAMzs</sampler>
-     <iter>100000</iter>
+     <iter>10000</iter>
+     <chain>3</chain>
    </bt.settings>
   <param.names>
+   <soil>
+    <param>som_respiration_rate</param>
+   </soil>
    <boreal.coniferous>
     <param>psnTOpt</param>
     <param>half_saturation_PAR</param>
     <param>Vm_low_temp</param>
    </boreal.coniferous>
   </param.names>
-  <jump>
-   <adapt>250</adapt>
-    <adj.min>0.1</adj.min>
-    <ar.target>0.3</ar.target>
-  </jump>
   <inputs>
    <file>
-    <input.id>15000000028</input.id>  
+    <input.id>15000000028</input.id>   
     <path>
-     <path>/.../ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path>  
+     <path>/data/dbfiles/ICOS_site_1-266/FLX_FI-Var_FLUXNET2015_FULLSET_HH_2016-2018_beta-3.csv</path> 
     </path>
     <likelihood>Laplace</likelihood>
     <variable.id>297</variable.id>
@@ -373,19 +429,50 @@ We will check out the `<assim.batch>` block for the good old MH-MCMC and the DRE
   </inputs>
  </assim.batch>
 ```
-
+Assuming you save these tags under a `pecan.PDA.xml`
+```
+settings <- read.settings("pecan.PDA.xml")
+settings_postPDA <- pda.bayesian.tools(settings)
+```
+In case of no convergence and/or if you would like to run the same chains longer, you can add the extension option:
+```
+settings_postPDA$assim.batch$extension <- 'longer'
+settings_postPDA_longer <- pda.bayesian.tools(settings_postPDA)
+```
 ## 3. Own data with emulator
 
-Sometimes you might want to use your own local data (e.g. from a tower that is not necessarily part of any flux tower network PEcAn has access to, or some chamber measurements etc.) in constraining your model. Although we still do recommend using formal PEcAn data registration and processing pipelines, sometimes you may not have access to the DB and/or may want to bypass other data processing steps to perform a quick PDA analysis to plan ahead. In that case, you can use `external.*` arguments of the `pda.emulator()` function. You can prepare the `external.*` arguments manually, but the easiest way to generate them is to use `pda.generate.externals()` function that you can find under the script with the same name:
+Sometimes you might want to use your own local data (e.g. from a tower that is not necessarily part of any flux tower network PEcAn has access to, or some chamber measurements etc.) for constraining your model. Although we still do recommend using formal PEcAn data registration and processing pipelines, sometimes you may not have access to the DB and/or may want to bypass other data processing steps to perform a quick PDA analysis to plan ahead. In that case, you can use `external.*` arguments of the `pda.emulator()` function. You can prepare the `external.*` arguments manually, but the easiest way to generate them is to use `pda.generate.externals()` function that you can find under the script with the same name. `pda.emulator()` function accepts the following `external.*` arguments:
 
 * `external.data` This is a list containing your constraining variables in the format expected by the PDA functions (see also `pda.generate.externals()` function). The length of this list is the number of your data streams (e.g. if you are using NEE and LE in calibration, it will have two sublists). *Hint: You may want to perform case #1 and load the `history.pda` file to check the format of the `inputs` object out, because if `external.data` is passed to the `pda.emulator()` it will simply be assined to this variable, `inputs <- external.data`.* To be able to prepare `external.data` with the `pda.generate.externals()` function you need your data as a(n ordered) list where each sublist corresponds to a data frame of your constraining variable with two columns, variable name - posix.
 
-* `external.formats` This is a list of variable names in the format expected by the PDA functions (see also `pda.generate.externals()` function). The length of this list is the number of your data streams (e.g. if you are using NEE and LE in calibration, it will have two sublists). Depending on expressions provided in this object, PDA functions are capable of performing simple derivations on data. Hence, this list has a slightly more complex structure than a simple list of names, but don't worry about it. To be able to prepare `external.formats` with the `pda.generate.externals()` it is enough to pass `varn` vector that has the standard variable names (when in doubt check the standard variable naes under `/base/utils/data/standard_vars.csv`).
+* `external.formats` This is a list of variable names in the format expected by the PDA functions (see also `pda.generate.externals()` function). The length of this list is the number of your data streams (e.g. if you are using NEE and LE in calibration, it will have two sublists). Depending on expressions provided in this object, PDA functions are capable of performing simple derivations on data. Hence, this list has a slightly more complex structure than a simple list of names, but don't worry about it. To be able to prepare `external.formats` with the `pda.generate.externals()` it is enough to pass `varn` vector that has the standard variable names (when in doubt, check the standard variable names under `/base/utils/data/standard_vars.csv`).
 
-* `external.priors` To do.
+* `external.priors` This is a list of pecan probability distribution dataframes to be used as PDA priors, one sublist per PFT, e.g.:
+```
+[[1]]
+                       distn parama  paramb  n
+frozenSoilEff           beta  1.000    1.00 NA
+soilRespMoistEffect     unif  0.000    2.00 NA
+...
 
-* `external.knots` To do.
+[[2]]
+                              distn      parama       paramb   n
+growth_resp_factor             beta       2.630      6.5e+00   0
+root_respiration_rate          norm       8.700      9.5e-01  NA
+...
+```
 
+* `external.knots` This is a list of dataframes containing emulator training points. Only pass it if you want to build the emulator on specific knots over which you want to have control, otherwise knots are generated from the PDA priors using Latin Hypercube Sampling. Each sublist should be a `nknot x nPFTparam` dataframe, e.g. if you are building an emulator with 250 knots and your PFT has 30 parameters, this will be a 250 x 30 dataframe where each row is a parameter vector. Therefore only the columns of parameters that you are targeting in PDA should have varying parameter values. E.g. if you are calibrating the `psnTOpt` parameter, it would look like this:
+```
+> external.knots
+$temperate.deciduous
+        ...  half_saturation_PAR fine_root_respiration_Q10   psnTOpt  AmaxFrac   ...
+  [1,]  ...                 15.5                       3.2  24.83626 0.8605507   ...   
+  [2,]  ...                 15.5                       3.2  25.18056 0.8605507   ...
+  [3,]  ...                 15.5                       3.2  26.10204 0.8605507   ...
+  [4,]  ...                 15.5                       3.2  25.03353 0.8605507   ...
+   ...  ...                 ...                        ...       ...       ...   ...
+```
 Once you prepare `external.data` and `external.format`, now you can omit the `<input.id></input.id>` and `<path></path>` tags in the `<assim.batch>` block (they will be ignored even if you pass them when `external.data` is not NULL:
 ```
  <assim.batch>
@@ -418,11 +505,11 @@ Once you prepare `external.data` and `external.format`, now you can omit the `<i
  </assim.batch>
 ```
 
-Save and read your `pecan.PDA.xml` accordingly. Next Then pass the external data and formats you prepared explicitly to the `pda.emulator()` function:
+Save and read your `pecan.PDA.xml` accordingly. Next, pass the external data and formats you prepared explicitly to the `pda.emulator()` function:
 
 ```
 settings <- read.settings("pecan.PDA.xml")
-pda.externals <-  pda.generate.externals(external.data = TRUE, obs = obs, varn = "NEE", varid = 297, external.formats = TRUE) # see above for this function
+pda.externals <-  pda.generate.externals(external.data = TRUE, obs = obs, varn = "NEE", varid = 297, external.formats = TRUE) 
 settings_postPDA <- pda.emulator(settings, external.data = pda.externals$external.data, external.formats = pda.externals$external.formats)
 ```
 
@@ -440,104 +527,44 @@ settings_postPDA <- pda.emulator(settings, external.data    = pda.externals$exte
                                            external.priors  = pda.externals$external.priors, 
                                            remote = TRUE, ensemble.id = "PDA_VIGNETTE")
 ```
-Two more notes here before moving onto the next case. Now that we only passed priors for the three parameters we target, rest of the model parameters will be kept as their defaults (however it is implemented in the model package), *they won't be kept at the medians of their prior range as it is normally the case in PDA*. If you don't want that to happen, pass a more comprehensive list or try to use prior (or meta analysis posterior) objects generated by PEcAn workflows. Finally, we haven't used the `external.knots` argument yet. We only use it when we need to overwrite and force the training points for the emulator and don't necessarily need to populate this argument when doing PDA without database connection. We leave testing with `external.knots` as an exercise.
+Two more notes here before moving onto the next case. Above, in the `prior.list` object, we only passed prior distribution for the three parameters we target. In this case rest of the model parameters will be kept as their defaults (whichever way it is implemented in the model package), *they won't be kept at the medians of their prior range as it is normally the case in PDA because we haven't passed a prior (range) for them*. If you don't want that to happen, pass a more comprehensive list or try to use prior (or meta analysis posterior) objects generated by PEcAn workflows. Finally, we haven't used the `external.knots` argument yet. We only use it when we need to overwrite and enforce the training points for the emulator and don't necessarily need to populate this argument when doing PDA without database connection. We leave testing with `external.knots` as an exercise.
 
 ## 4. Own data with BayesianTools
 
-## TODO
-
-
-If you want to extend your previous *bruteforce* and *bruteforce.bs* MCMC-chains, you can add an `<extension>` tag within your `<assim.batch>` chunk after reading your post-PDA settings (which would be saved as "pecan.pda[UNIQUE_ID].xml" in your working directory) and set it to "longer". 
-
+It's all very much the same as the cases above, in combination of #2 (prepare `BayesianTools` specific xml tags) and #3 (prepare external arguments).
 ```
-  ...
-  <method>bruteforce.bs</method>
-  <iter>10000</iter>
-  <method>bruteforce</method>
-  <chain>3</chain>
-  <extension>longer</extension>
-  ...
+ <assim.batch>
+   <method>bayesian.tools</method>
+   <bt.settings>
+     <sampler>DREAMzs</sampler>
+     <iter>10000</iter>
+     <chain>3</chain>
+   </bt.settings>
+  <param.names>
+   <boreal.coniferous>
+    <param>psnTOpt</param>
+    <param>half_saturation_PAR</param>
+    <param>Vm_low_temp</param>
+   </boreal.coniferous>
+  </param.names>
+  <inputs>
+   <file>
+    <likelihood>Laplace</likelihood>
+    <variable.id>297</variable.id>
+    <variable.name>
+     <variable.name>NEE</variable.name>
+     <variable.name>UST</variable.name>
+    </variable.name>
+   </file>
+  </inputs>
+ </assim.batch>
 ```
-
-If you are using methods other than *bruteforce* and *bruteforce.bs*, some additional tags and different settings may apply. 
-
-**emulator** would use additional tags:
+Save and read your `pecan.PDA.xml` accordingly. Next, pass the external data and formats you prepared explicitly to the `pda.bayesian.tools()` function:
 ```
-  ...
-  <method>emulator</method>
-  <n.knot>20</n.knot>
-  <GPpckg>GPfit</GPpckg>
-  <chain>3</chain>
-  <extension>round</extension>
-  <knot.par>0.75</knot.par>
-  ...
+settings <- read.settings("pecan.PDA.xml")
+pda.externals <-  pda.generate.externals(external.data    = TRUE, obs = obs, varn = "NEE", varid = 297, external.formats = TRUE, external.priors  = TRUE, prior.list = prior.list) 
+settings_postPDA <- pda.bayesian.tools(settings, external.data    = pda.externals$external.data, 
+                                           external.formats = pda.externals$external.formats,
+                                           external.priors  = pda.externals$external.priors, 
+                                           remote = TRUE, ensemble.id = "PDA_VIGNETTE")
 ```
-* `<n.knot>` Specifies the number of locations in parameter space to be sampled by the Latin Hypercube design. These locations are where the model will actually be run. In other words the model will be run for `<n.knots>` times. 
-
-* `<GPpckg>` Specifies which R package to use for fitting a Gaussian process to interpolate the likelihood surface in between the calculated values that are obtained from actual model runs. Current options are `kernlab` and `GPfit` (recommended). 
-
-* `<chain>` Specifies the number of MCMC chains to be run.
-
-* `<extension>` Specifies the extension type of additional emulator runs, should be skipped if this a first emulator run of its own. Otherwise it is possible to extend emulator PDA runs in two ways:      
-
-    + `<extension>longer</extension>` using the same emulator, this extension run takes the MCMC sampling from where it was left in the previous emulator run and runs a longer MCMC chain.
-     
-    + `<extension>round</extension>` this extension run proposes new points in the parameter space in addition to the previous ones, and builds a new emulator including these additional points for a new MCMC sampling. These new points can come from both your inital PDA prior and the posterior of your first round of emulator run. You can determine the percentage of new knots coming from the posterior of your previous run in the `<knot.par>` tag. If you leave it empty, 75% of your new points will be drawn from the posterior of your previous run by default.
-
-```
-      <file>
-        <input.id>...</input.id>
-        <path>
-          <path>...</path>
-        </path>
-        <likelihood>multipGauss</likelihood>
-        <ss.positive>TRUE</ss.positive>
-        <variable.id>...</variable.id>
-        <variable.name>
-          <variable.name>...</variable.name>
-        </variable.name>
-      </file>
-    </inputs>
-```
-
-* `<ss.positive>` When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound. 
-
-**bayesian.tools** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
-
-* Metropolis
-     + Standard MH-MCMC
-     + With pre-optimization
-     + Adaptive MCMC
-     + Delayed rejection
-     + Gibbs updating
-* M : Another implementation of standard MH-MCMC.
-* AM : Adaptive Metropolis
-* DR : Delayed Rejection
-* DRAM : Delayed Rejection Adaptive Metropolis
-* DE : Differential Evolution 
-* DEzs : Differential Evolution with a snooker updater
-* DREAM : Differential Evolution Adaptive Metropolis 
-* DREAMzs : Differential Evolution Adaptive Metropolis with a snooker updater
-* Twalk : "traverse" or "thoughtful" walk, a general purpose sampling algorithm
-* SMC : Sequential Monte Carlo
-
-The name of the chosen sampler would be passed under `<sampler>` tag within the `<bt.settings>` block :
-
-It is not possible to use some of the samplers in this package for univariate cases. The ones that you can use for univariate cases are: "Metropolis", "DE", "DEzs" and "Twalk".
-
-For Metropolis variations:
-```
-  ...
-  <method>bayesian.tools</method>
-  <bt.settings>
-    <iter>10000</iter>
-    <sampler>Metropolis</sampler>
-    <DRlevels>1</DRlevels>                               <-- set 2 for Delayed Rejection
-    <optimize>FALSE</optimize>                           <-- set TRUE for pre-optimization
-    <adapt>FALSE</adapt>                                 <-- set TRUE for Adaptive Metropolis
-    <adaptationNotBefore>500</adaptationNotBefore>       <-- set for Adaptive Metropolis
-  </bt.settings>
-  ...
-```
-
-Some of the samplers are also restartable : "Metropolis", "DE", "DEzs", "DREAM", "DREAMzs", "Twalk"
