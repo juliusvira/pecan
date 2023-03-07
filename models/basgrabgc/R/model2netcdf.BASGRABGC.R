@@ -53,8 +53,9 @@ split_by_year <- function(df) {
 process_output <- function(df.raw, df.info) {
   varnames <- df.info[df.info$name.basgra != '', 'name.basgra']
   if (ncol(df.raw) != length(varnames) + 3) {
-    PEcAn.logger::logger.severe(sprintf('Wrong number of columns in output file (%i expected, %i present',
-                                        length(varnames) + 3, ncol(df.raw)))
+    PEcAn.logger::logger.severe(
+                    sprintf('Wrong number of columns in output file (%i expected, %i present',
+                            length(varnames) + 3, ncol(df.raw)))
   }
   colnames(df.raw) <- c('decimal_year', 'year', 'doy', varnames)
 
@@ -66,12 +67,14 @@ process_output <- function(df.raw, df.info) {
     } else if (vars2extract[ind_row, 'name.basgra'] != '') {
       data.raw <- df.raw[,vars2extract[ind_row, 'name.basgra']]
       conv <- vars2extract[ind_row, 'conv2bethy']
-      if (is.na(conv)) PEcAn.logger::logger.severe(sprintf('Cannot unit-convert bethy variable: %s',
-                                                           vars2extract[ind_row, 'name.bethy']))
+      if (is.na(conv)) PEcAn.logger::logger.severe(
+                                       sprintf('Cannot unit-convert bethy variable: %s',
+                                               vars2extract[ind_row, 'name.bethy']))
       result <- data.raw*conv
     } else {
-      PEcAn.logger::logger.severe(sprintf('Cannot convert bethy variable: %s',
-                                          vars2extract[ind_row, 'name.bethy']))
+      PEcAn.logger::logger.severe(
+                      sprintf('Cannot convert bethy variable: %s',
+                              vars2extract[ind_row, 'name.bethy']))
     }
     return(result)
   }
@@ -137,10 +140,11 @@ get_model2netcdf <- function(make_netcdf_func, get_output_func, get_out_info_fun
 ##' @export
 ##'
 ##' @author Julius Vira
-model2netcdf.BASGRABGC <- get_model2netcdf(make_netcdf,
-                                           get_output_func = function(filepath) {
-                                             read.table(filepath)},
-                                           get_out_info_func = function() {
-                                             read.csv(system.file('basgra-bgc.output.map.csv',
-                                                                  package='PEcAn.BASGRABGC'))}
-                                           )
+model2netcdf.BASGRABGC <- get_model2netcdf(
+  make_netcdf,
+  get_output_func = function(filepath) {
+    read.table(filepath)},
+  get_out_info_func = function() {
+    read.csv(system.file('basgra-bgc.output.map.csv',
+                         package='PEcAn.BASGRABGC'))}
+)
