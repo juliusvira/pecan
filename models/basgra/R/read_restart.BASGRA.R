@@ -127,6 +127,11 @@ read_restart.BASGRA <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("phenological_stage")
   } 
   
+  if ("SoilMoistFrac" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  
+    names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
+  } 
+  
   PEcAn.logger::logger.info(runid)
   
   X_tmp <- list(X = unlist(forecast), params = params)
