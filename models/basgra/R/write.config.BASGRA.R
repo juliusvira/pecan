@@ -311,20 +311,35 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "LOG10LAII"] <- last_vals[names(last_vals) == "LAI"]
     }
     
-    if ("fast_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+    # For Yasso test
+    if(run_params[names(run_params) == "use_yasso"]){
+      last_soc <- sum(last_vals[names(last_vals) == "CSOM_A"],
+                      last_vals[names(last_vals) == "CSOM_W"],
+                      last_vals[names(last_vals) == "CSOM_E"],
+                      last_vals[names(last_vals) == "CSOM_N"],
+                      last_vals[names(last_vals) == "CSOM_H"])
+      if ("TotSoilCarb"  %in% ic.names) {
+        run_params[names(run_params) == "totc_init"] <- udunits2::ud.convert(IC$TotSoilCarb, "kg", "g")
+      }else{
+        run_params[names(run_params) == "totc_init"] <- last_soc
+      }
+      run_params[names(run_params) == "fract_legacy_c"] <-  last_vals[names(last_vals) == "CSOM_H"] / last_soc
     }else{
-      run_params[names(run_params) == "CSOMF0"] <- last_vals[names(last_vals) == "CSOMF"]
+      if ("fast_soil_pool_carbon_content"  %in% ic.names) {
+        run_params[names(run_params) == "CSOMF0"] <- udunits2::ud.convert(IC$fast_soil_pool_carbon_content, "kg", "g")
+      }else{
+        run_params[names(run_params) == "CSOMF0"] <- last_vals[names(last_vals) == "CSOMF"]
+      }
+      run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
+      
+      if ("slow_soil_pool_carbon_content"  %in% ic.names) {
+        run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
+      }else{
+        run_params[names(run_params) == "CSOMS0"] <- last_vals[names(last_vals) == "CSOMS"]
+      }
+      run_params[names(run_params) == "NSOMS0"]  <- run_params[names(run_params) == "CSOMS0"] / run_params[names(run_params) == "CNSOMS0"]
+      
     }
-    run_params[names(run_params) == "NSOMF0"]  <- run_params[names(run_params) == "CSOMF0"] / run_params[names(run_params) == "CNSOMF0"]
-    
-    if ("slow_soil_pool_carbon_content"  %in% ic.names) {
-      run_params[names(run_params) == "CSOMS0"] <- udunits2::ud.convert(IC$slow_soil_pool_carbon_content, "kg", "g")
-    }else{
-      run_params[names(run_params) == "CSOMS0"] <- last_vals[names(last_vals) == "CSOMS"]
-    }
-    run_params[names(run_params) == "NSOMS0"]  <- run_params[names(run_params) == "CSOMS0"] / run_params[names(run_params) == "CNSOMS0"]
-    
     
     if ("CropYield"  %in% ic.names) {
       run_params[names(run_params) == "YIELDI"] <- udunits2::ud.convert(IC$CropYield, "kg", "g")
@@ -388,13 +403,11 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
     
     run_params[names(run_params) == "FRTILGI"] <- last_vals[names(last_vals) == "FRTILG"] 
     
-    if(run_params[names(run_params) == "FRTILGI"] == 0) run_params[names(run_params) == "FRTILGI"] <- 0.0001
+    if(run_params[names(run_params) == "FRTILGI"] == 0) run_params[names(run_params) == "FRTILGI"] <- 0.01
     
     #TILV       = TILTOTI * (1. - FRTILGI)
     if ("nonelongating_vegetative_tiller"  %in% ic.names) {
       run_params[names(run_params) == "TILVI"] <-  IC$nonelongating_vegetative_tiller
-      # preserve ratio
-      run_params[names(run_params) == "FRTILGI"] <- 1 - (run_params[names(run_params) == "TILVI"]/run_params[names(run_params) == "TILTOTI"])
     }else{
       run_params[names(run_params) == "TILVI"]  <- run_params[names(run_params) == "TILTOTI"] * (1-run_params[names(run_params) == "FRTILGI"])
     }
@@ -406,18 +419,18 @@ write.config.BASGRA <- function(defaults, trait.values, settings, run.id, IC = N
       run_params[names(run_params) == "TILG1I"] <-  IC$nonelongating_generative_tiller
       # can also update FRTILGG1I but I don't throw these into the state matrix anymore and TILG1I is initialized from its own variable, not derived from fractions
     }else{
-      run_params[names(run_params) == "TILG1I"] <- gtil*last_vals[names(last_vals) == "TILG1"]  / 
-        (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
-      if(is.nan(run_params[names(run_params) == "TILG1I"])) run_params[names(run_params) == "TILG1I"] <- 0
+      run_params[names(run_params) == "TILG1I"] <- gtil*gtil*(last_vals[names(last_vals) == "TILG1"]  / 
+                                                                (last_vals[names(last_vals) == "TILG1"]+last_vals[names(last_vals) == "TILG2"]))
+      if(is.nan(run_params[names(run_params) == "TILG1I"])) run_params[names(run_params) == "TILG1I"] <- 1
     }
     
     #TILG2      = TILTOTI *       FRTILGI * (1-FRTILGG1I)
     if ("elongating_generative_tiller"  %in% ic.names) {
       run_params[names(run_params) == "TILG2I"] <-  IC$elongating_generative_tiller
     }else{
-      run_params[names(run_params) == "TILG2I"] <- gtil*last_vals[names(last_vals) == "TILG2"]  / 
-        (last_vals[names(last_vals) == "TILTOT"] - last_vals[names(last_vals) == "TILV"])
-      if(is.nan(run_params[names(run_params) == "TILG2I"])) run_params[names(run_params) == "TILG2I"] <- 0
+      run_params[names(run_params) == "TILG2I"] <- gtil*(last_vals[names(last_vals) == "TILG2"]  / 
+                                                           (last_vals[names(last_vals) == "TILG1"]+last_vals[names(last_vals) == "TILG2"]))
+      if(is.nan(run_params[names(run_params) == "TILG2I"])) run_params[names(run_params) == "TILG2I"] <- 1
     }
     
     if ("phenological_stage"  %in% ic.names) {
